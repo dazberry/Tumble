@@ -25,10 +25,24 @@ namespace Tumble.Core
             return Add(item);
         }
 
-        public PipelineContext Remove<T>(T item)
+        public PipelineContext Remove<T>()
         {
             var items = _pipelineContextList.Where(x => !x.Is<T>());
             _pipelineContextList = new List<IPipelineContextItem>(items);
+            return this;
+        }
+
+        public PipelineContext Remove<T>(T item)
+        {
+            var items = _pipelineContextList.Where(x => x.Is<T>() && x.As<T>().Equals(item));
+            _pipelineContextList = _pipelineContextList.Except(items).ToList();
+            return this;
+        }
+
+        public PipelineContext Remove<T>(Func<T, bool> compareAction)
+        {
+            var items = _pipelineContextList.Where(x => x.Is<T>() && (compareAction?.Invoke(x.As<T>()) ?? false));
+            _pipelineContextList = _pipelineContextList.Except(items).ToList();
             return this;
         }
 

@@ -7,11 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CA33D54C-E51
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tumble.Core", "src\Tumble.core\Tumble.Core.csproj", "{D96DC96F-A536-41BE-87ED-A1D472D15C40}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tumble.Client", "src\Tumble.Client\Tumble.Client.csproj", "{CCD9E2AC-E8FF-49C7-8404-847B0A8A4756}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tumble.Client", "src\Tumble.Client\Tumble.Client.csproj", "{CCD9E2AC-E8FF-49C7-8404-847B0A8A4756}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tumble.Handlers", "src\Tumble.Handlers\Tumble.Handlers.csproj", "{D967C0B4-DD3E-49C9-ABBE-40CD2F6C15F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tumble.Handlers", "src\Tumble.Handlers\Tumble.Handlers.csproj", "{D967C0B4-DD3E-49C9-ABBE-40CD2F6C15F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tumble.Middleware", "src\Tumble.Middleware\Tumble.Middleware.csproj", "{99FAD203-C830-4562-8B5C-C4099D682EE2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tumble.Middleware", "src\Tumble.Middleware\Tumble.Middleware.csproj", "{99FAD203-C830-4562-8B5C-C4099D682EE2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{BBE99318-A58F-4A76-958D-23B077873B51}"
 EndProject
@@ -19,7 +19,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D7689900
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BasicRedirect", "BasicRedirect", "{139582D6-3DDF-47C7-B709-607434F54779}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicRedirect.Web.Api", "samples\BasicRedirect\BasicRedirect.Web.Api\BasicRedirect.Web.Api.csproj", "{359A3539-ADD2-47EF-BEC6-96282C88DD9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicRedirect.Web.Api", "samples\BasicRedirect\BasicRedirect.Web.Api\BasicRedirect.Web.Api.csproj", "{359A3539-ADD2-47EF-BEC6-96282C88DD9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tumble.Tests", "src\Tumble.Tests\Tumble.Tests.csproj", "{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +49,10 @@ Global
 		{359A3539-ADD2-47EF-BEC6-96282C88DD9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{359A3539-ADD2-47EF-BEC6-96282C88DD9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{359A3539-ADD2-47EF-BEC6-96282C88DD9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,6 +64,7 @@ Global
 		{99FAD203-C830-4562-8B5C-C4099D682EE2} = {CA33D54C-E510-4B81-86A9-908FBB851EB6}
 		{139582D6-3DDF-47C7-B709-607434F54779} = {BBE99318-A58F-4A76-958D-23B077873B51}
 		{359A3539-ADD2-47EF-BEC6-96282C88DD9D} = {139582D6-3DDF-47C7-B709-607434F54779}
+		{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9} = {D7689900-2474-46E9-B45B-BC1D50C2C1F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A48F735A-EC38-4A5B-BBB0-C309A059FE2F}
