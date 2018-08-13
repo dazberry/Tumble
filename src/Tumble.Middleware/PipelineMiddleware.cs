@@ -12,7 +12,9 @@ namespace Tumble.Middleware
         private readonly PipelineRequest _pipelineRequest;
         private readonly PipelineMiddlewareConfiguration _middlewareConfiguration;
 
-        public PipelineMiddleware(RequestDelegate next, PipelineRequest pipelineRequest, PipelineMiddlewareConfiguration middlewareConfiguration = null)
+        public PipelineMiddleware(RequestDelegate next, PipelineRequest pipelineRequest) : this(next, pipelineRequest, null) { }
+
+        public PipelineMiddleware(RequestDelegate next, PipelineRequest pipelineRequest, PipelineMiddlewareConfiguration middlewareConfiguration)
         {
             _next = next;            
             _pipelineRequest = pipelineRequest;

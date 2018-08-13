@@ -4,6 +4,6 @@
     {
         public string StartsWithSegment { get; set; } = "/api";
 
-        public PipelineMiddlewareEnum AfterPipelineInvoke { get; set; } = PipelineMiddlewareEnum.Exit;
+        public PipelineMiddlewareEnum AfterPipelineInvoke { get; set; } = PipelineMiddlewareEnum.Exit;        
     }
 }
