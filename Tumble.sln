@@ -21,7 +21,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BasicRedirect", "BasicRedir
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicRedirect.Web.Api", "samples\BasicRedirect\BasicRedirect.Web.Api\BasicRedirect.Web.Api.csproj", "{359A3539-ADD2-47EF-BEC6-96282C88DD9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tumble.Tests", "src\Tumble.Tests\Tumble.Tests.csproj", "{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tumble.Tests", "src\Tumble.Tests\Tumble.Tests.csproj", "{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VersionRedirect", "samples\VersionRedirect\VersionRedirect.csproj", "{C6E60333-EB4F-4586-B105-A74614E2C550}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +55,10 @@ Global
 		{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6E60333-EB4F-4586-B105-A74614E2C550}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6E60333-EB4F-4586-B105-A74614E2C550}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6E60333-EB4F-4586-B105-A74614E2C550}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6E60333-EB4F-4586-B105-A74614E2C550}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -65,6 +71,7 @@ Global
 		{139582D6-3DDF-47C7-B709-607434F54779} = {BBE99318-A58F-4A76-958D-23B077873B51}
 		{359A3539-ADD2-47EF-BEC6-96282C88DD9D} = {139582D6-3DDF-47C7-B709-607434F54779}
 		{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9} = {D7689900-2474-46E9-B45B-BC1D50C2C1F1}
+		{C6E60333-EB4F-4586-B105-A74614E2C550} = {BBE99318-A58F-4A76-958D-23B077873B51}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A48F735A-EC38-4A5B-BBB0-C309A059FE2F}
