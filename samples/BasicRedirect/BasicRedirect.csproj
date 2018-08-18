@@ -13,9 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Tumble.core\Tumble.Core.csproj" />
-    <ProjectReference Include="..\..\..\src\Tumble.Handlers\Tumble.Handlers.csproj" />
-    <ProjectReference Include="..\..\..\src\Tumble.Middleware\Tumble.Middleware.csproj" />
+    <ProjectReference Include="..\..\src\Tumble.core\Tumble.Core.csproj" />
+    <ProjectReference Include="..\..\src\Tumble.Handlers\Tumble.Handlers.csproj" />
+    <ProjectReference Include="..\..\src\Tumble.Middleware\Tumble.Middleware.csproj" />
   </ItemGroup>
 
 </Project>
