@@ -5,8 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Handlers\" />
-    <Folder Include="Pipelines\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
@@ -20,7 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Tumble.Client\Tumble.Client.csproj" />
     <ProjectReference Include="..\..\..\src\Tumble.core\Tumble.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Tumble.Handlers\Tumble.Handlers.csproj" />
   </ItemGroup>
 
 </Project>

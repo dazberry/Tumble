@@ -22,4 +22,22 @@ namespace Tumble.Handlers.Miscellaneous
             }
         }
     }
+
+    public static class PipelineRequestExtension
+    {
+        public static PipelineRequest AddDelegateHandler(
+            this PipelineRequest pipelineRequest,
+            Action<PipelineContext> beforeNextInvokeAction,
+            Action<PipelineContext> afterNextInvokeAction = null)
+        {
+            pipelineRequest.AddHandler(
+                new DelegateHandler()
+                {
+                    BeforeNextInvokeAction = beforeNextInvokeAction,
+                    AfterNextInvokeAction = afterNextInvokeAction
+                });
+            return pipelineRequest;
+        }
+            
+    }
 }

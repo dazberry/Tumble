@@ -89,6 +89,18 @@ namespace Tumble.Core
             _pipelineContextList
                 .FirstOrDefault(x => x.Name == name);
 
+        public bool Get<T>(string name, out T value)
+        {
+            value = default(T);
+            var result = Get(name);            
+            if (result?.Is<T>() ?? false)
+            {
+                value = result.As<T>();
+                return true;
+            }
+            return false;
+        }            
+
         public bool GetFirst<T>(out T value)
         {
             value = default(T);
