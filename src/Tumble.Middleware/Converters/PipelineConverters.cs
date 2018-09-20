@@ -2,7 +2,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using ProxyMiddleware.Extensions;
+using Tumble.Client.Extensions;
 
 namespace Tumble.Converters
 {

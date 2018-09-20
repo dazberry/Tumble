@@ -14,6 +14,13 @@ namespace Tumble.Core
         }
     }
 
+    public class PipelineHandlerNotFound<T> : PipelineException
+    {
+        public PipelineHandlerNotFound() : base(null, $"Handler {typeof(T)} not found in collection")
+        {
+        }
+    }
+
     public class PipelineDependencyException : PipelineException
     {
         protected static string FormatErrorMessage(IPipelineHandler handler, params string[] dependencies)

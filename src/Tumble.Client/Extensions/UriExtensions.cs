@@ -2,17 +2,29 @@
 using System.Linq;
 using System.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 
-namespace ProxyMiddleware.Extensions
+namespace Tumble.Client.Extensions
 {
     public static class UriExtensions
     {
         public static string ToUriString(this HttpRequest httpRequest) =>
-            $"{httpRequest.Scheme}://{httpRequest.Host.Host}:{httpRequest.Host.Port}{httpRequest.PathBase}{httpRequest.Path}{httpRequest.QueryString}";
-
+            $"{httpRequest.Scheme}{Uri.SchemeDelimiter}{httpRequest.Host.Host}:{httpRequest.Host.Port}{httpRequest.PathBase}{httpRequest.Path}{httpRequest.QueryString}";
+       
         public static Uri ToUri(this HttpRequest httpRequest) =>        
-            new Uri(httpRequest.ToUriString());  
-        
+            new Uri(httpRequest.ToUriString());
+
+        public static Uri Append(this Uri uri, string route)
+        {
+            var segments = uri.Segments.Select(x => x.TrimEnd('/')).Where(x => !String.IsNullOrEmpty(x));
+            var newSegments = route.Split('/').Select(x => x.TrimEnd('/'));
+            segments = segments.Concat(newSegments).Where(x => !string.IsNullOrEmpty(x));
+            var result = string.Join('/', segments);
+
+            return new Uri($"{uri.Scheme}{Uri.SchemeDelimiter}{uri.Host}{(uri.Port == 0 ? "" : $":{uri.Port}")}/{result}{uri.Query}");                      
+
+        }
+
         public static Uri RemoveQueryKey(this Uri uri, string key)
         {
             var queryString = HttpUtility.ParseQueryString(uri.Query);

@@ -8,6 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PipelinedApi.Handlers;
+using Swashbuckle.AspNetCore.Swagger;
+using Tumble.Core;
 
 namespace PipelinedApi
 {
@@ -22,8 +25,26 @@ namespace PipelinedApi
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {
+        {            
+            var pipelineHandlerCollection = new PipelineHandlerCollection()
+                .Add<ValidateStopId>()
+                .Add<SetEndpoint>(handler =>
+                {
+                    var baseUrl = Configuration.GetValue<Uri>("Endpoints:baseUrl");
+                    handler.BaseUrl = baseUrl;
+                })
+                .Add<SetStopId>()
+                .Add<InvokeGetRequest>();
+
+            services.AddSingleton(pipelineHandlerCollection);
+                
+
             services.AddMvc();
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "Pipelined API", Version = "v1" });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -33,6 +54,13 @@ namespace PipelinedApi
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseSwagger();
+            
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pipelined API");
+            });
 
             app.UseMvc();
         }

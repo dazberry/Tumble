@@ -7,14 +7,14 @@ namespace Tumble.Core
 {
     public class PipelineRequest
     {
-        private IList<IPipelineHandler> _pipelineHandlers = new List<IPipelineHandler>();        
-
+        private IList<IPipelineHandler> _pipelineHandlers = new List<IPipelineHandler>();
+             
         public PipelineRequest AddHandler(IPipelineHandler pipelineHandler)
         {
             _pipelineHandlers.Add(pipelineHandler);
             return this;
         }
-
+        
         public PipelineRequest AddHandler<T>(Action<T> handlerAction = null)
             where T : IPipelineHandler, new()
         {
@@ -23,7 +23,6 @@ namespace Tumble.Core
             _pipelineHandlers.Add(handler);            
             return this;
         }
-
 
         public async Task<PipelineContext> InvokeAsync(PipelineContext context, Action<PipelineContext> invokeAction = null)
         {
@@ -55,7 +54,6 @@ namespace Tumble.Core
         }
 
         public async Task<PipelineContext> InvokeAsync(Action<PipelineContext> invokeAction = null) =>
-            await InvokeAsync(null, invokeAction);
-       
+            await InvokeAsync(null, invokeAction);       
     }
 }

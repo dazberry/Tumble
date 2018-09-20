@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Tumble.Client\Tumble.Client.csproj" />
     <ProjectReference Include="..\Tumble.core\Tumble.Core.csproj" />
   </ItemGroup>
 
