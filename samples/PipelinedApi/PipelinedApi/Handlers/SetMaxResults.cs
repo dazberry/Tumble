@@ -10,8 +10,8 @@ using Tumble.Core.Notifications;
 
 namespace PipelinedApi.Handlers
 {
-    public class SetStopId : SetQueryParameter
+    public class SetMaxResults : SetQueryParameter
     {
-        public SetStopId() : base("stopId", "stopId", false) { }
+        public SetMaxResults() : base("maxResults", "maxResults", false) { }
     }
 }

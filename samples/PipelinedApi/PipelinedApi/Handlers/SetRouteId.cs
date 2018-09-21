@@ -10,8 +10,8 @@ using Tumble.Core.Notifications;
 
 namespace PipelinedApi.Handlers
 {
-    public class SetStopId : SetQueryParameter
+    public class SetRouteId : SetQueryParameter
     {
-        public SetStopId() : base("stopId", "stopId", false) { }
+        public SetRouteId() : base("routeId", "routeId", false) { }
     }
 }

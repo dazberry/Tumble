@@ -25,16 +25,25 @@ namespace PipelinedApi.Controllers
         }
 
         [HttpGet("{stopId}/arrival")]
-        public async Task<IActionResult> GetByStopNumber([FromRoute]string stopId)
+        public async Task<IActionResult> GetByStopNumber([FromRoute]string stopId, [FromQuery]string routeId, [FromQuery]string operatorId, [FromQuery]int? maxResults)
         {
             var context = await new PipelineRequestBuilder(_handlers)                                                
                 .AddHandler<SetEndpoint>()
                 .AddHandler<SetStopId>()
+                .AddHandler<SetOperatorId>(
+                    handler => handler.OptionalParameter = true)
+                .AddHandler<SetRouteId>(
+                    handler => handler.OptionalParameter = true)
+                .AddHandler<SetMaxResults>(
+                    handler => handler.OptionalParameter = true)
                 .AddHandler<InvokeGetRequest>()
                 .AddHandler<ParseSuccessResponse<ArrivalInfo>>()
                 .PipelineRequest
                 .InvokeAsync(ctx =>
                     ctx.Add("stopId", stopId)
+                       .Add("routeId", routeId)
+                       .Add("operatorId", operatorId)
+                       .Add("maxResults", maxResults.ToString(), maxResults.HasValue)
                        .Add("endpoint", "/realtimebusinformation")
                 );
 
@@ -57,11 +66,5 @@ namespace PipelinedApi.Controllers
             var result = context.Get<ApiResponse<StopInfo>>("response");
             return Ok(result);
         }
-
-        //[HttpGet("StopTimes")]
-        //public async Task<IActionResult> GetStopTimes(string stopNo)
-        //{
-        //    return Ok();
-        //}
     }
 }

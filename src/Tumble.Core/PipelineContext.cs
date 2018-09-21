@@ -13,9 +13,9 @@ namespace Tumble.Core
         public PipelineContext Add<T>(T item) =>
             Add(string.Empty, item);
         
-        public PipelineContext Add<T>(string name, T item)
+        public PipelineContext Add<T>(string name, T item, bool addCondition = true)
         {
-            if (string.IsNullOrEmpty(name) || Get(name) == null)
+            if (addCondition && (string.IsNullOrEmpty(name) || Get(name) == null))
                 _pipelineContextList.Add(new PipelineContextItem<T>(name, item));
             return this;
         }

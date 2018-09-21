@@ -25,16 +25,17 @@ namespace PipelinedApi
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {            
+        {
             var pipelineHandlerCollection = new PipelineHandlerCollection()
-                .Add<ValidateStopId>()
                 .Add<SetEndpoint>(handler =>
                 {
                     var baseUrl = Configuration.GetValue<Uri>("Endpoints:baseUrl");
                     handler.BaseUrl = baseUrl;
                 })
+                .Add<InvokeGetRequest>()
                 .Add<SetStopId>()
-                .Add<InvokeGetRequest>();
+                .Add<SetRouteId>()
+                .Add<SetOperatorId>();
 
             services.AddSingleton(pipelineHandlerCollection);
                 

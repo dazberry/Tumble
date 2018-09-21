@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace PipelinedApi.Models
 {
@@ -10,7 +11,13 @@ namespace PipelinedApi.Models
         public string ErrorCode { get; set; }
         public string ErrorMessage { get; set; }
         public int NumberOfResults { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string StopId { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Route { get; set; }
+
         public DateTime TimeStamp { get; set; }
 
         public IEnumerable<T> Results { get; set; } = new T[0];
