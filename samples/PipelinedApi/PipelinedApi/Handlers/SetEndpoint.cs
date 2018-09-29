@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Extensions;
 using Tumble.Core;
 using Tumble.Core.Notifications;
 using Tumble.Client.Extensions;

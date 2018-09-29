@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Tumble.Client;
+﻿using System.Threading.Tasks;
 using Tumble.Core;
-using Tumble.Core.Notifications;
 
 namespace PipelinedApi.Routes.Common
 {
