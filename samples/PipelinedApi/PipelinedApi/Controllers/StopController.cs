@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using PipelinedApi.Handlers;
 using PipelinedApi.Models;
-using PipelinedApi.Routes.Common;
 using Tumble.Core;
-using Tumble.Handlers.Miscellaneous;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -27,26 +21,36 @@ namespace PipelinedApi.Controllers
         [HttpGet("{stopId}/arrival")]
         public async Task<IActionResult> GetByStopNumber([FromRoute]string stopId, [FromQuery]string routeId, [FromQuery]string operatorId, [FromQuery]int? maxResults)
         {
-            var context = await new PipelineRequestBuilder(_handlers)                                                
-                .AddHandler<SetEndpoint>()
-                .AddHandler<SetStopId>()
-                .AddHandler<SetOperatorId>(
-                    handler => handler.OptionalParameter = true)
-                .AddHandler<SetRouteId>(
-                    handler => handler.OptionalParameter = true)
-                .AddHandler<SetMaxResults>(
-                    handler => handler.OptionalParameter = true)
+            var context = await new PipelineRequestBuilder(_handlers)
+                .AddHandler<SetEndpoint>((handler, ctx) =>
+                {
+                    ctx.Add("endpoint", "/realtimebusinformation");
+                })
+                .AddHandler<SetStopId>((handler, ctx) =>
+                {
+                    handler.MakeOptional();
+                    ctx.Add("stopId", stopId);
+                })
+                .AddHandler<SetOperatorId>((handler, ctx) =>
+                {
+                    handler.MakeOptional();
+                    ctx.Add("operatorId", operatorId);
+                })
+                .AddHandler<SetRouteId>((handler, ctx) =>
+                {
+                    handler.MakeOptional();
+                    ctx.Add("routeId", routeId);
+                })
+                .AddHandler<SetMaxResults>((handler, ctx) =>
+                {
+                    handler.MakeOptional();
+                    ctx.Add("maxResults", maxResults.ToString(), maxResults.HasValue);
+                })
                 .AddHandler<InvokeGetRequest>()
                 .AddHandler<ParseSuccessResponse<ArrivalInfo>>()
-                .PipelineRequest
-                .InvokeAsync(ctx =>
-                    ctx.Add("stopId", stopId)
-                       .Add("routeId", routeId)
-                       .Add("operatorId", operatorId)
-                       .Add("maxResults", maxResults.ToString(), maxResults.HasValue)
-                       .Add("endpoint", "/realtimebusinformation")
-                );
-
+                .InvokeAsync();
+                 
+                
             return Ok(context.Get<ApiResponse<ArrivalInfo>>("response"));                         
         }
 
@@ -54,15 +58,14 @@ namespace PipelinedApi.Controllers
         public async Task<IActionResult> GetStopInformation([FromRoute]string stopId)
         {
             var context = await new PipelineRequestBuilder(_handlers)
-                            .AddHandler<SetEndpoint>()
-                            .AddHandler<SetStopId>()
+                            .AddHandler<SetEndpoint>((handler, ctx) =>
+                                ctx.Add("endpoint", "/busstopinformation"))                                
+                            .AddHandler<SetStopId>((handler, ctx) =>
+                                ctx.Add("stopId", stopId))
                             .AddHandler<InvokeGetRequest>()
                             .AddHandler<ParseSuccessResponse<StopInfo>>()
-                            .PipelineRequest
-                            .InvokeAsync(ctx =>
-                                ctx.Add("stopId", stopId)
-                                   .Add("endpoint", "/busstopinformation")
-                            );
+                            .InvokeAsync();
+                            
             var result = context.Get<ApiResponse<StopInfo>>("response");
             return Ok(result);
         }

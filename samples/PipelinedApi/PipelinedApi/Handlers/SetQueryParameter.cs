@@ -28,7 +28,10 @@ namespace PipelinedApi.Handlers
             }
         }
 
-        private IList<KeyValuePair<string, string>> ToKVP(NameValueCollection source) =>
+        public void MakeOptional() =>
+            _optionalParameter = true;
+
+        private IList<KeyValuePair<string, string>> NameValueToKeyValuePairs(NameValueCollection source) =>
             source.AllKeys.SelectMany(source.GetValues, (k, v) => new KeyValuePair<string, string>(k, v)).ToList();
 
         public SetQueryParameter(string contextVariableName, string queryParameterName, bool optionalParameter = false)
@@ -44,11 +47,11 @@ namespace PipelinedApi.Handlers
             {
                 if (context.Get(_contextVariableName, out string value) && value != null)
                 {
-                    var kvp = ToKVP(HttpUtility.ParseQueryString(uri.Query));                    
-                    kvp.Add(new KeyValuePair<string, string>(_queryParameterName, value));
+                    var keyValuePairs = NameValueToKeyValuePairs(HttpUtility.ParseQueryString(uri.Query));                    
+                    keyValuePairs.Add(new KeyValuePair<string, string>(_queryParameterName, value));
 
                     var ub = new UriBuilder(uri);
-                    QueryBuilder qb = new QueryBuilder(kvp);
+                    QueryBuilder qb = new QueryBuilder(keyValuePairs);
                     ub.Query = qb.ToString();
                     context.AddOrReplace(ub.Uri);
                 }
