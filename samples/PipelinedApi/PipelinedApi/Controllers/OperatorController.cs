@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using PipelinedApi.Handlers;
 using PipelinedApi.Models;
+using PipelinedApi.Handlers.Rtpi;
 using Tumble.Core;
 
 namespace PipelinedApi.Controllers

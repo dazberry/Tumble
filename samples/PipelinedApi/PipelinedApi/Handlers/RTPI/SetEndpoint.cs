@@ -5,7 +5,7 @@ using Tumble.Core;
 using Tumble.Core.Notifications;
 using Tumble.Client.Extensions;
 
-namespace PipelinedApi.Handlers
+namespace PipelinedApi.Handlers.Rtpi
 {
     public class SetEndpoint : IPipelineHandler
     {

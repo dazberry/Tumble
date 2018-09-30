@@ -1,4 +1,6 @@
-﻿namespace PipelinedApi.Handlers
+﻿using PipelinedApi.Handlers;
+
+namespace PipelinedApi.Handlers.Rtpi
 {
     public class SetMaxResults : SetQueryParameter
     {

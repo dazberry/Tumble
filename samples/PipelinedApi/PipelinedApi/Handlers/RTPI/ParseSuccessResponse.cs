@@ -5,7 +5,7 @@ using Newtonsoft.Json.Converters;
 using PipelinedApi.Models;
 using Tumble.Core;
 
-namespace PipelinedApi.Handlers
+namespace PipelinedApi.Handlers.Rtpi
 {
     public class ParseSuccessResponse<T> : IPipelineHandler
     {

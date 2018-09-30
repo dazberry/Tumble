@@ -1,18 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Tumble.Core
 {
+   
     public class PipelineRequestBuilder
     {       
+
+        private class NamedPipelineHandler
+        {
+            public string Name { get; set; }
+            public IPipelineHandler PipelineHandler { get; set; }
+        }
+
         private readonly PipelineHandlerCollection _pipelineRequestCollection;
-               
-        private readonly PipelineContext _pipelineContext;
+                       
+        private readonly PipelineRequest _pipelineRequest;
         public PipelineRequest PipelineRequest => _pipelineRequest;
 
-        private readonly PipelineRequest _pipelineRequest;
+        private readonly PipelineContext _pipelineContext;
         public PipelineContext PipelineContext => _pipelineContext;
                       
         public PipelineRequestBuilder(PipelineHandlerCollection pipelineHandlerCollection) 
@@ -29,13 +38,12 @@ namespace Tumble.Core
             where  T : IPipelineHandler, new()
         {
             var handler = (T)_pipelineRequestCollection.Get<T>();
-            if (handler == null)
-                handler = new T();
+            if (handler == null) handler = new T();
             addHandlerAction?.Invoke(handler, _pipelineContext);
             _pipelineRequest.AddHandler(handler);
             return this;
         }
-
+               
         public PipelineRequestBuilder AddHandler<T>(T handler, Action<T, PipelineContext> addHandlerAction = null)
             where T : IPipelineHandler
         {                        

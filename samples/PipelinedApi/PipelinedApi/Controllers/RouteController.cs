@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using PipelinedApi.Handlers;
+using PipelinedApi.Handlers.Rtpi;
 using PipelinedApi.Models;
 using Tumble.Core;
 

@@ -12,8 +12,8 @@ namespace PipelinedApi.Handlers
 {
     public class SetQueryParameter : IPipelineHandler
     {
-        private string _contextVariableName;
-        private string _queryParameterName;
+        private readonly string _contextVariableName;
+        private readonly string _queryParameterName;
 
         private bool _optionalParameter;
         public bool OptionalParameter

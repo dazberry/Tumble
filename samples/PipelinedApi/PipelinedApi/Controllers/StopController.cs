@@ -1,8 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using PipelinedApi.Handlers;
+using PipelinedApi.Handlers.Rtpi;
 using PipelinedApi.Models;
 using Tumble.Core;
+using PipelinedApi.Handlers;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -18,9 +19,26 @@ namespace PipelinedApi.Controllers
             _handlers = pipelineHandlerCollection;            
         }
 
+        [HttpGet("{stopId}/luas")]
+        public async Task<IActionResult> GetLuasStopNumber([FromRoute]string stopId)
+        {
+            var context = await new PipelineRequestBuilder(_handlers)
+                .AddHandler<Handlers.Luas.SetEndpoint>()
+                .AddHandler<Handlers.Luas.SetEncrypt>((_, ctx) =>
+                    ctx.Add("encrypt", "false"))
+                .AddHandler<Handlers.Luas.SetAction>((_, ctx) =>
+                    ctx.Add("action", "list"))
+                .AddHandler<InvokeGetRequest>()
+                .AddHandler<Handlers.Luas.ParseListResponse>()
+                .InvokeAsync();
+
+            var response = context.Get<LuasLines>("response");
+            return Ok(response);
+        }
+
         [HttpGet("{stopId}/arrival")]
         public async Task<IActionResult> GetByStopNumber([FromRoute]string stopId, [FromQuery]string routeId, [FromQuery]string operatorId, [FromQuery]int? maxResults)
-        {
+        {            
             var context = await new PipelineRequestBuilder(_handlers)
                 .AddHandler<SetEndpoint>((handler, ctx) =>
                 {
