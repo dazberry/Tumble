@@ -16,13 +16,17 @@ namespace Tumble.Client.Extensions
 
         public static Uri Append(this Uri uri, string route)
         {
-            var segments = uri.Segments.Select(x => x.TrimEnd('/')).Where(x => !String.IsNullOrEmpty(x));
-            var newSegments = route.Split('/').Select(x => x.TrimEnd('/'));
-            segments = segments.Concat(newSegments).Where(x => !string.IsNullOrEmpty(x));
-            var result = string.Join('/', segments);
+            //var segments = uri.Segments.Select(x => x.TrimEnd('/')).Where(x => !String.IsNullOrEmpty(x));
+            //var newSegments = route.Split('/').Select(x => x.TrimEnd('/'));
+            //segments = segments.Concat(newSegments).Where(x => !string.IsNullOrEmpty(x));
+            //var result = string.Join('/', segments);
 
-            return new Uri($"{uri.Scheme}{Uri.SchemeDelimiter}{uri.Host}{(uri.Port == 0 ? "" : $":{uri.Port}")}/{result}{uri.Query}");                      
+            var segments = uri.Segments.Concat(route.Split('/'))
+                    .Where(x => !string.IsNullOrEmpty(x) && x != "/")
+                    .Select(x => x.Trim('/'))
+                    .ToArray();
 
+            return new Uri($"{uri.Scheme}{Uri.SchemeDelimiter}{uri.Host}{(uri.Port == 0 ? "" : $":{uri.Port}")}/{string.Join('/', segments)}{uri.Query}");                      
         }
 
         public static Uri RemoveQueryKey(this Uri uri, string key)
