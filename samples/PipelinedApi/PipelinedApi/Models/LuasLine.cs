@@ -13,7 +13,7 @@ namespace PipelinedApi.Models
     [XmlRoot(ElementName = "line")]
     public class LuasLine
     {
-        [XmlElement(ElementName = "name")]
+        [XmlAttribute(AttributeName = "name")]
         public string Name { get; set; }
         [XmlElement(ElementName = "stop")]
         public LuasStopInfo[] Stop { get; set; }
