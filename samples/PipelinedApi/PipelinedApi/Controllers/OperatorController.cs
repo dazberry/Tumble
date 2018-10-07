@@ -23,15 +23,16 @@ namespace PipelinedApi.Controllers
 
         [HttpGet("list")]
         public async Task<IActionResult> Get()
-        {           
-            var context = await new PipelineRequestBuilder(_handlers)              
-              .AddHandler<SetEndpoint>()
+        {
+            var pipeline = new PipelineRequest()
+              .AddHandlerFromCollection<SetEndpoint>(_handlers)
               .AddHandler<InvokeGetRequest>()
-              .AddHandler<ParseSuccessResponse<OperatorInformation>>()
-              .PipelineRequest
-              .InvokeAsync(ctx =>
-                  ctx.Add("endpoint", "/operatorinformation")
-              );
+              .AddHandler<ParseSuccessResponse<OperatorInformation>>();
+
+            var context = new PipelineContext()
+                .Add("endpoint", "/operatorinformation");
+
+            await pipeline.InvokeAsync(context);
 
             var result = context.Get<ApiResponse<OperatorInformation>>();
             return Ok(result);

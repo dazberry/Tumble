@@ -33,10 +33,7 @@ namespace PipelinedApi
                     var baseUrl = Configuration.GetValue<Uri>("Endpoints:Luas:baseUrl");
                     handler.BaseUrl = baseUrl;
                 })
-                .Add<InvokeGetRequest>()
-                .Add<SetStopId>()
-                .Add<SetRouteId>()
-                .Add<SetOperatorId>();
+                .Add<InvokeGetRequest>();
 
             services.AddSingleton(pipelineHandlerCollection);
                 

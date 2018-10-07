@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using PipelinedApi.Handlers;
 using PipelinedApi.Models;
+using Tumble.Client.Handlers;
 using Tumble.Core;
 
 namespace PipelinedApi.Controllers
@@ -23,16 +24,15 @@ namespace PipelinedApi.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> GetStopList()
         {
-            var context = await new PipelineRequestBuilder(_handlers)
-                .AddHandler<Handlers.Luas.SetEndpoint>()
-                .AddHandler<Handlers.Luas.SetEncrypt>((_, ctx) =>
-                    ctx.Add("encrypt", "false"))
-                .AddHandler<Handlers.Luas.SetAction>((_, ctx) =>
-                    ctx.Add("action", "list"))
+            var context = await new PipelineRequest()
+                .AddHandlerFromCollection<Handlers.Luas.SetEndpoint>(_handlers)
+                .AddHandler<QueryParameters>(
+                    handler => handler.Add("encrypt", "false")
+                                      .Add("action", "list"))
                 .AddHandler<InvokeGetRequest>()
                 .AddHandler<Handlers.Luas.ParseListResponse>()
                 .InvokeAsync();
-
+                           
             var response = context.Get<LuasLines>("response");
             return Ok(response);
         }
@@ -40,18 +40,21 @@ namespace PipelinedApi.Controllers
         [HttpGet("{stopId}")]
         public async Task<IActionResult> GetStopInfo([FromRoute] string stopId)
         {
-            var context = await new PipelineRequestBuilder(_handlers)
-                .AddHandler<Handlers.Luas.SetEndpoint>()
-                .AddHandler<Handlers.Luas.SetEncrypt>((_, ctx) =>
-                    ctx.Add("encrypt", "false"))
-                .AddHandler<Handlers.Luas.SetAction>((_, ctx) =>
-                    ctx.Add("action", "forecast"))
-                .AddHandler<Handlers.Luas.SetStop>((_, ctx) => 
-                    ctx.Add("stop", stopId))
+            var pipeline = new PipelineRequest()
+                .AddHandlerFromCollection<Handlers.Luas.SetEndpoint>(_handlers)
+                .AddHandler<QueryParameters>(
+                    handler => handler.Add("encrypt", "false")
+                                      .Add("action", "forecast"))
+                .AddHandler<ContextQueryParameters>(
+                    handler => handler.Add("stop"))
                 .AddHandler<InvokeGetRequest>()
-                .AddHandler<Handlers.Luas.ParseStopResponse>()
-                .InvokeAsync();
+                .AddHandler<Handlers.Luas.ParseStopResponse>();
 
+            var context = new PipelineContext()
+                .Add("stop", stopId);
+
+            await pipeline.InvokeAsync(context);
+              
             var response = context.Get<LuasStop>("response");
             return Ok(response);
         }

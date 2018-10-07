@@ -21,12 +21,10 @@ namespace PipelinedApi.Handlers
                 {
                     context.Add(response);
                     await next.Invoke();
-                }
-                else
-                    context.Add(new Notification(this, "error message"));
+                };                
             }
             else
-                context.AddNotification(this, "Not URI specified");
+                context.AddNotification(this, "No URI specified");
         }
     }
 }
