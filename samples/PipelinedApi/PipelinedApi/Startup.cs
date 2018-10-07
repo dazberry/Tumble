@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PipelinedApi.Handlers;
+using PipelinedApi.Handlers.Rtpi;
 using Swashbuckle.AspNetCore.Swagger;
 using Tumble.Core;
 
@@ -24,13 +25,15 @@ namespace PipelinedApi
             var pipelineHandlerCollection = new PipelineHandlerCollection()
                 .Add<SetEndpoint>(handler =>
                 {
-                    var baseUrl = Configuration.GetValue<Uri>("Endpoints:baseUrl");
+                    var baseUrl = Configuration.GetValue<Uri>("Endpoints:Rtpi:baseUrl");
                     handler.BaseUrl = baseUrl;
                 })
-                .Add<InvokeGetRequest>()
-                .Add<SetStopId>()
-                .Add<SetRouteId>()
-                .Add<SetOperatorId>();
+                .Add<Handlers.Luas.SetEndpoint>(handler =>
+                {
+                    var baseUrl = Configuration.GetValue<Uri>("Endpoints:Luas:baseUrl");
+                    handler.BaseUrl = baseUrl;
+                })
+                .Add<InvokeGetRequest>();
 
             services.AddSingleton(pipelineHandlerCollection);
                 

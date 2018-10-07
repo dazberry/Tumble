@@ -16,4 +16,14 @@ namespace PipelinedApi.Models
 
         public OperatorInfo[] Operators { get; set; }
     }
+
+    // _name
+
+    // abrev
+    // isParkRide
+    // isCycleRide
+    // lat
+    // long
+    // pronunciation
+    // text
 }

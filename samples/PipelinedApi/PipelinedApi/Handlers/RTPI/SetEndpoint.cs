@@ -5,7 +5,7 @@ using Tumble.Core;
 using Tumble.Core.Notifications;
 using Tumble.Client.Extensions;
 
-namespace PipelinedApi.Handlers
+namespace PipelinedApi.Handlers.Rtpi
 {
     public class SetEndpoint : IPipelineHandler
     {
@@ -15,12 +15,17 @@ namespace PipelinedApi.Handlers
         {            
             if (context.Get("endpoint", out string endPoint))              
             {
+                if (BaseUrl == null)
+                {
+                    context.AddNotification(this, "Missing BaseUrl value");
+                    return;
+                }
                 var uri = BaseUrl.Append(endPoint);
                 context.Add(uri);
                 await next.Invoke();
             }
             else
-                context.AddNotification(this, "missing endpoint information");
+                context.AddNotification(this, "Missing endpoint information");
 
         }
     }
