@@ -16,6 +16,6 @@ namespace PipelinedApi.Models
         [XmlAttribute(AttributeName = "name")]
         public string Name { get; set; }
         [XmlElement(ElementName = "stop")]
-        public LuasStopInfo[] Stop { get; set; }
+        public LuasStopInfo[] Stops { get; set; }
     }
 }
