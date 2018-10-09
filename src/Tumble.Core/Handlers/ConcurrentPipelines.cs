@@ -12,28 +12,53 @@ namespace Tumble.Core.Handlers
         {
             public PipelineRequest Request { get; set; }
             public PipelineContext Context { get; set; }
+
+            public Task InvokeAsync()
+            {
+                var task = Task.Run(() => Request.InvokeAsync(Context).Wait());
+                return task;
+            }
         }
 
-        private List<RequestAndContext> _requestAndContexts = new List<RequestAndContext>();
+        private List<RequestAndContext> _requestAndPipeline = new List<RequestAndContext>();
+
+        public int ConcurrentPipelineCount { get; set; } = 5;
        
         public ConcurrentPipelines Add(PipelineRequest request, PipelineContext context)
         {
-            _requestAndContexts.Add(new RequestAndContext() { Request = request, Context = context });
+            _requestAndPipeline.Add(new RequestAndContext() { Request = request, Context = context });
             return this;
         }            
 
         public async Task InvokeAsync(PipelineContext context, PipelineDelegate next)
         {
-            List<Task> tasks = new List<Task>();
+            var concurrentPipelineCount = ConcurrentPipelineCount < 1
+                    ? 1 : ConcurrentPipelineCount;
 
-            foreach (var requestAndContext in _requestAndContexts)
+            foreach (var requestAndPipeline in _requestAndPipeline)
+                context.Add(requestAndPipeline.Context);
+
+            var remainingItems = _requestAndPipeline
+                                    .Skip(concurrentPipelineCount)
+                                    .Select(x => x);
+
+            var runningTasks = _requestAndPipeline
+                                    .Take(concurrentPipelineCount)
+                                    .Select(x => x.InvokeAsync())
+                                    .ToList();
+                        
+            while (runningTasks.Any())
             {
-                var task = requestAndContext.Request.InvokeAsync(requestAndContext.Context);
-                context.Add(requestAndContext.Context);
-                tasks.Add(task);
-            }
+                var task = await Task.WhenAny(runningTasks.ToArray());
+                runningTasks.Remove(task);
 
-            await Task.WhenAll(tasks.ToArray());
+                var nextTask = remainingItems.FirstOrDefault();
+                if (nextTask != null)
+                {
+                    runningTasks.Add(nextTask.InvokeAsync());
+                    remainingItems = remainingItems.Skip(1);
+                }
+            }
             
             await next.Invoke();
         }
