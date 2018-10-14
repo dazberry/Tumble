@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Tumble.Core.Notifications;
 
 namespace Tumble.Core
 {
@@ -58,8 +59,10 @@ namespace Tumble.Core
             }
             catch (Exception ex)
             {
-                var handler = _pipelineHandlers.Skip(index).FirstOrDefault();
-                context.Add(new PipelineException(handler, "Unhandled exception", ex));
+                var handler = _pipelineHandlers.Skip(index-1).FirstOrDefault();
+                ctx
+                    .AddNotification(handler, $"Unhandled Exception: {ex.Message}")
+                    .AddNotification(handler, ex.ToString());
             }
 
             return ctx;

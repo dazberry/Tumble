@@ -19,6 +19,8 @@ namespace PipelinedApi.Handlers.Rtpi
                     var response = JsonConvert.DeserializeObject<ApiResponse<T>>
                         (result, new IsoDateTimeConverter { DateTimeFormat = "dd/MM/yyyy HH:mm:ss" });
                     context.Add("response", response);
+
+                    await next.Invoke();
                 }
             }
             else
