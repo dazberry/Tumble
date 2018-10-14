@@ -6,6 +6,8 @@ using PipelinedApi.Handlers;
 using PipelinedApi.Models;
 using PipelinedApi.Handlers.Rtpi;
 using Tumble.Core;
+using Tumble.Core.Notifications;
+using System.Linq;
 
 namespace PipelinedApi.Controllers
 {
@@ -27,15 +29,18 @@ namespace PipelinedApi.Controllers
             var pipeline = new PipelineRequest()
               .AddHandlerFromCollection<SetEndpoint>(_handlers)
               .AddHandler<InvokeGetRequest>()
-              .AddHandler<ParseSuccessResponse<OperatorInformation>>();
+              .AddHandler<ParseSuccessResponse<OperatorInformation>>()
+              .AddHandler<GenerateObjectResult<ApiResponse<OperatorInformation>>>();
 
             var context = new PipelineContext()
                 .Add("endpoint", "/operatorinformation");
 
             await pipeline.InvokeAsync(context);
 
-            var result = context.Get<ApiResponse<OperatorInformation>>();
-            return Ok(result);
+            if (context.GetFirst(out IActionResult response))
+                return response;
+
+            return new StatusCodeResult(500);
         }
     }
 }
