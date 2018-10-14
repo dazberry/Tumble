@@ -28,7 +28,7 @@ namespace PipelinedApi.Controllers
                 .AddHandler<ContextQueryParameters>(
                     handler => handler
                         .Add("stopId")
-                        .Add("operatorId", true)
+                        .Add("operator", true)
                         .Add("routeId", true)
                         .Add("maxResults", true))
                 .AddHandlerFromCollection<InvokeGetRequest>(_handlers)
@@ -37,7 +37,7 @@ namespace PipelinedApi.Controllers
             var context = new PipelineContext()
                     .Add("endpoint", "/realtimebusinformation")
                     .Add("stopId", stopId)
-                    .Add("operatorId", operatorId, true)
+                    .Add("operator", operatorId, true)
                     .Add("routeId", routeId, true)
                     .Add("maxResults", maxResults.ToString(), true);
 
