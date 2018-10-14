@@ -33,6 +33,11 @@ namespace PipelinedApi
                     var baseUrl = Configuration.GetValue<Uri>("Endpoints:Luas:baseUrl");
                     handler.BaseUrl = baseUrl;
                 })
+                .Add<Handlers.DublinBikes.SetEndpoint>(handler =>
+                {
+                    var baseUrl = Configuration.GetValue<Uri>("Endpoints:DublinBikes:baseUrl");
+                    handler.BaseUrl = baseUrl;
+                })
                 .Add<InvokeGetRequest>();
 
             services.AddSingleton(pipelineHandlerCollection);
