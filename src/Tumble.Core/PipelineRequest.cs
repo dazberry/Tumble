@@ -10,6 +10,7 @@ namespace Tumble.Core
     public class PipelineRequest
     {
         private IList<IPipelineHandler> _pipelineHandlers = new List<IPipelineHandler>();
+        public IPipelineHandler[] Handers => _pipelineHandlers.ToArray();
              
         public PipelineRequest AddHandler(IPipelineHandler pipelineHandler)
         {
@@ -19,15 +20,6 @@ namespace Tumble.Core
             return this;
         }
 
-        public PipelineRequest AddHandlerFromCollection<T>(PipelineHandlerCollection handlers)
-            where T : IPipelineHandler
-        {
-            var handler = handlers.Get<T>();
-            if (handler == null)
-                throw new ArgumentException("PipelineRequest.AddHandlerFromCollection. Typed handler not found in collection.");
-            return AddHandler(handler);
-        }
-
         public PipelineRequest AddHandler<T>(Action<T> handlerAction = null)
             where T : IPipelineHandler, new()
         {
@@ -35,7 +27,18 @@ namespace Tumble.Core
             handlerAction?.Invoke(handler);
             _pipelineHandlers.Add(handler);            
             return this;
-        }        
+        }
+
+        public PipelineRequest AddHandlers(PipelineRequest pipelineRequest) =>
+            AddHandlers(pipelineRequest.Handers);
+        
+        public PipelineRequest AddHandlers(IPipelineHandler[] pipelineHandlers)
+        {
+            _pipelineHandlers = _pipelineHandlers.Concat(pipelineHandlers)
+                                                 .ToList();
+            return this;
+        }
+
 
         public async Task<PipelineContext> InvokeAsync(PipelineContext context, Action<PipelineContext> invokeAction = null)
         {

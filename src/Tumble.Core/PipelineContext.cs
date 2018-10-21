@@ -8,8 +8,8 @@ namespace Tumble.Core
     {
         public readonly Guid Id = Guid.NewGuid();
 
-        private IList<IPipelineContextItem> _pipelineContextList = new List<IPipelineContextItem>();
-
+        protected IList<IPipelineContextItem> _pipelineContextList = new List<IPipelineContextItem>();
+     
         public PipelineContext Add<T>(T item) =>
             Add(string.Empty, item);
         
@@ -44,7 +44,7 @@ namespace Tumble.Core
                 _pipelineContextList = new List<IPipelineContextItem>(_pipelineContextList.Except(items));            
             return Add(item);
         }
-
+       
         public PipelineContext Remove<T>()
         {
             var items = _pipelineContextList.Where(x => !x.Is<T>() && string.IsNullOrEmpty(x.Name));
@@ -99,7 +99,7 @@ namespace Tumble.Core
                 return true;
             }
             return false;
-        }            
+        }
 
         public bool GetFirst<T>(out T value)
         {
@@ -111,7 +111,29 @@ namespace Tumble.Core
                 return true;
             }
             return false;
-        }        
+        }
+        
+        public PipelineContext AddFromContext(PipelineContext context, bool replaceNamedItems = false)
+        {
+            for (int i = 0; i < context.Count; i++)
+            {
+                var contextItem = context[i];
+                if (contextItem.IsNamed)
+                {
+                    var existingItem = Get(contextItem.Name);
+                    if (existingItem == null)
+                        _pipelineContextList.Add(contextItem);
+                    else
+                    if (replaceNamedItems)
+                        _pipelineContextList[i] = contextItem;
+                }
+                else
+                    _pipelineContextList.Add(contextItem);
+            }
+            return this;
+        }
+
+
 
         private class PipelineContextItem : IPipelineContextItem
         {

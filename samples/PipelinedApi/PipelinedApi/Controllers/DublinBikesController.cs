@@ -24,47 +24,45 @@ namespace PipelinedApi.Controllers
             _apiKey = configuration.GetValue<string>("JCDApiKey");
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetStations()
-        {            
-            var pipeline = new PipelineRequest()
-                .AddHandlerFromCollection<SetEndpoint>(_handlers)
+        private PipelineRequest GetStationsPipeline() =>
+            new PipelineRequest()
+                .AddHandler(_handlers.Get<SetEndpoint>())
                 .AddHandler<ContextQueryParameters>(handler =>
                     handler.Add("contract")
                            .Add("apiKey"))
-                .AddHandlerFromCollection<InvokeGetRequest>(_handlers)
+                .AddHandler(_handlers.Get<InvokeGetRequest>())
                 .AddHandler<ParseStationsResponse>();
-                    
 
-            var context = new PipelineContext()
-                .Add("endpoint", "stations")
-                .Add("contract", "Dublin")
-                .Add("apiKey", _apiKey);
-
-            await pipeline.InvokeAsync(context);
-
+        [HttpGet]
+        public async Task<IActionResult> GetStations()
+        {
+            var context = await GetStationsPipeline()
+                .InvokeAsync(ctx => ctx
+                    .Add("endpoint", "stations")
+                    .Add("contract", "Dublin")
+                    .Add("apiKey", _apiKey));
+            
             return Ok(context.Get<IEnumerable<DublinBikeStation>>("response"));
         }
+
+        private PipelineRequest GetStationPipeline() =>
+            new PipelineRequest()
+                .AddHandler(_handlers.Get<SetEndpoint>())
+                .AddHandler<ContextQueryParameters>(handler =>
+                    handler.Add("contract")
+                           .Add("apiKey"))
+                .AddHandler(_handlers.Get<InvokeGetRequest>())
+                .AddHandler<ParseStationResponse>();
 
         [HttpGet("{stationId}")]
         public async Task<IActionResult> GetStation([FromRoute]int stationId)
         {
-            var pipeline = new PipelineRequest()
-                .AddHandlerFromCollection<SetEndpoint>(_handlers)
-                .AddHandler<ContextQueryParameters>(handler =>
-                    handler.Add("contract")
-                           .Add("apiKey"))
-                .AddHandlerFromCollection<InvokeGetRequest>(_handlers)
-                .AddHandler<ParseStationResponse>();
-
-
-            var context = new PipelineContext()
-                .Add("endpoint", $"stations/{stationId}")
-                .Add("contract", "Dublin")
-                .Add("apiKey", _apiKey);
-
-            await pipeline.InvokeAsync(context);
-
+            var context = await GetStationPipeline()
+                .InvokeAsync(ctx => ctx
+                    .Add("endpoint", $"stations/{stationId}")
+                    .Add("contract", "Dublin")
+                    .Add("apiKey", _apiKey));
+           
             return Ok(context.Get<DublinBikeStation>("response"));
         }
         

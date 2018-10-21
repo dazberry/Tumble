@@ -5,6 +5,7 @@ using PipelinedApi.Models;
 using Tumble.Core;
 using PipelinedApi.Handlers;
 using Tumble.Client.Handlers;
+using Tumble.Handlers.Miscellaneous;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,51 +21,64 @@ namespace PipelinedApi.Controllers
             _handlers = pipelineHandlerCollection;            
         }
 
-        [HttpGet("{stopId}/arrival")]
-        public async Task<IActionResult> GetByStopNumber([FromRoute]string stopId, [FromQuery]string routeId, [FromQuery]string operatorId, [FromQuery]int? maxResults)
-        {
-            var pipeline = new PipelineRequest()
-                .AddHandlerFromCollection<SetEndpoint>(_handlers)
+        private PipelineRequest GetRealtimeBusInfoPipeline() =>
+            new PipelineRequest()            
+                .AddHandler<ContextParameters>(
+                    handler => handler
+                        .Add("endpoint", "/realtimebusinformation"))
+                .AddHandler(_handlers.Get<SetEndpoint>())
                 .AddHandler<ContextQueryParameters>(
                     handler => handler
                         .Add("stopId")
                         .Add("operator", true)
                         .Add("routeId", true)
-                        .Add("maxResults", true))
-                .AddHandlerFromCollection<InvokeGetRequest>(_handlers)
+                        .Add("maxResults", true))                
+                .AddHandler(_handlers.Get<InvokeGetRequest>())
                 .AddHandler<ParseSuccessResponse<ArrivalInfo>>();
-
-            var context = new PipelineContext()
-                    .Add("endpoint", "/realtimebusinformation")
-                    .Add("stopId", stopId)
-                    .Add("operator", operatorId, true)
-                    .Add("routeId", routeId, true)
-                    .Add("maxResults", maxResults.ToString(), true);
-
-            await pipeline.InvokeAsync(context);
                 
-            return Ok(context.Get<ApiResponse<ArrivalInfo>>("response"));                         
+        [HttpGet("{stopId}/arrival")]
+        public async Task<IActionResult> GetByStopNumber([FromRoute]string stopId, [FromQuery]string routeId, [FromQuery]string operatorId, [FromQuery]int? maxResults)
+        {           
+            var context = await new PipelineRequest()
+                    .AddHandler<GenerateObjectResult<ApiResponse<ArrivalInfo>>>()
+                    .AddHandlers(GetRealtimeBusInfoPipeline())
+                    .InvokeAsync(ctx => 
+                        ctx.Add("stopId", stopId)
+                        .Add("operator", operatorId, true)
+                        .Add("routeId", routeId, true)
+                        .Add("maxResults", maxResults.ToString(), true));           
+
+            if (context.GetFirst(out IActionResult response))
+                return response;
+
+            return new StatusCodeResult(500);
         }
+
+        private PipelineRequest GetBusStopInformationPipeline() =>
+            new PipelineRequest()
+                .AddHandler<ContextParameters>(
+                    handler => handler
+                        .Add("endpoint", "/busstopinformation"))
+                .AddHandler(_handlers.Get<SetEndpoint>())
+                .AddHandler<ContextQueryParameters>(
+                    handler => handler
+                        .Add("stopId"))
+                .AddHandler(_handlers.Get<InvokeGetRequest>())
+                .AddHandler<ParseSuccessResponse<StopInfo>>();
 
         [HttpGet("{stopId}/information")]
         public async Task<IActionResult> GetStopInformation([FromRoute]string stopId)
         {
-            var pipeline = new PipelineRequest()
-                .AddHandlerFromCollection<SetEndpoint>(_handlers)
-                .AddHandler<ContextQueryParameters>(
-                    handler => handler
-                        .Add("stopId"))
-                .AddHandlerFromCollection<InvokeGetRequest>(_handlers)
-                .AddHandler<ParseSuccessResponse<StopInfo>>();
+            var context = await new PipelineRequest()
+                    .AddHandler<GenerateObjectResult<ApiResponse<StopInfo>>>()
+                    .AddHandlers(GetBusStopInformationPipeline())
+                    .InvokeAsync(ctx =>
+                        ctx.Add("stopId", stopId));
+           
+            if (context.GetFirst(out IActionResult response))
+                return response;
 
-            var context = new PipelineContext()
-                    .Add("endpoint", "/busstopinformation")
-                    .Add("stopId", stopId);
-
-            await pipeline.InvokeAsync(context);
-                            
-            var result = context.Get<ApiResponse<StopInfo>>("response");
-            return Ok(result);
+            return new StatusCodeResult(500);
         }
     }
 }

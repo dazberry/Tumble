@@ -8,6 +8,7 @@ using PipelinedApi.Handlers.Rtpi;
 using Tumble.Core;
 using Tumble.Core.Notifications;
 using System.Linq;
+using Tumble.Handlers.Miscellaneous;
 
 namespace PipelinedApi.Controllers
 {
@@ -23,19 +24,22 @@ namespace PipelinedApi.Controllers
             _handlers = pipelineHandlerCollection;
         }
 
+        private PipelineRequest GetOperatorInformationPipeline() =>
+            new PipelineRequest()
+                .AddHandler<ContextParameters>(
+                    handler => handler
+                        .Add("endpoint", "/operatorinformation"))
+                .AddHandler(_handlers.Get<SetEndpoint>())
+                .AddHandler<InvokeGetRequest>()
+                .AddHandler<ParseSuccessResponse<OperatorInformation>>();
+
         [HttpGet("list")]
         public async Task<IActionResult> Get()
         {
-            var pipeline = new PipelineRequest()
-              .AddHandlerFromCollection<SetEndpoint>(_handlers)
-              .AddHandler<InvokeGetRequest>()
-              .AddHandler<ParseSuccessResponse<OperatorInformation>>()
-              .AddHandler<GenerateObjectResult<ApiResponse<OperatorInformation>>>();
-
-            var context = new PipelineContext()
-                .Add("endpoint", "/operatorinformation");
-
-            await pipeline.InvokeAsync(context);
+            var context = await new PipelineRequest()
+                .AddHandler<GenerateObjectResult<ApiResponse<OperatorInformation>>>()
+                .AddHandlers(GetOperatorInformationPipeline())
+                .InvokeAsync();
 
             if (context.GetFirst(out IActionResult response))
                 return response;

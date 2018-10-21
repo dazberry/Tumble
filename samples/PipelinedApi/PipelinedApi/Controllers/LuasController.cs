@@ -22,16 +22,20 @@ namespace PipelinedApi.Controllers
         {
             _handlers = pipelineHandlerCollection;
         }
-       
-        private async Task<LuasLines> GetLuasStopListAsync()
-        {
-            var context = await new PipelineRequest()
-                .AddHandlerFromCollection<Handlers.Luas.SetEndpoint>(_handlers)
+               
+        private PipelineRequest GetLuasStopListPipeline() =>
+            new PipelineRequest()
+                .AddHandler(_handlers.Get<Handlers.Luas.SetEndpoint>())
                 .AddHandler<QueryParameters>(
                     handler => handler.Add("encrypt", "false")
                                       .Add("action", "list"))
                 .AddHandler<InvokeGetRequest>()
-                .AddHandler<Handlers.Luas.ParseListResponse>()
+                .AddHandler<Handlers.Luas.ParseListResponse>();                
+             
+        private async Task<LuasLines> GetStopListAsync()
+        {
+            var context = await new PipelineRequest()
+                .AddHandlers(GetLuasStopListPipeline())
                 .InvokeAsync();
 
             return context.Get<LuasLines>("response");
@@ -40,13 +44,13 @@ namespace PipelinedApi.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> GetStopList()
         {
-            var response = await GetLuasStopListAsync();
+            var response = await GetStopListAsync();
             return Ok(response);
         }
 
         private PipelineRequest GetStopInfoPipeline() =>
             new PipelineRequest()
-                .AddHandlerFromCollection<Handlers.Luas.SetEndpoint>(_handlers)
+                .AddHandler(_handlers.Get<Handlers.Luas.SetEndpoint>())
                 .AddHandler<QueryParameters>(
                     handler => handler.Add("encrypt", "false")
                                       .Add("action", "forecast"))
@@ -58,13 +62,11 @@ namespace PipelinedApi.Controllers
         [HttpGet("{stopId}")]
         public async Task<IActionResult> GetStopInfo([FromRoute] string stopId)
         {
-            var pipeline = GetStopInfoPipeline();
-
-            var context = new PipelineContext()
-                .Add("stop", stopId);
-
-            await pipeline.InvokeAsync(context);
-
+            var context = await new PipelineRequest()
+                .AddHandlers(GetStopInfoPipeline())
+                .InvokeAsync(ctx => ctx
+                    .Add("stop", stopId));            
+           
             var response = context.Get<LuasStop>("response");
             return Ok(response);
         }
@@ -77,19 +79,20 @@ namespace PipelinedApi.Controllers
             if (!directions.Any(x => string.Compare(x, direction, true) == 0))
                 return BadRequest(new { error = "Invalid direction specified", directions });
 
-            var stopList = await GetLuasStopListAsync();
+            var stopList = await GetStopListAsync();
+                
             var index = stopList.GetIndexOfShortName(line);
             if (index == -1)
                 return BadRequest(new { error = "Invalid line specified", lines = stopList.GetLineShortNames() });
 
             var names = stopList.Line[index].Stops.Select(x => x.Abrev).ToArray();
-           
+
             var pipeline = new PipelineRequest()
                 .AddHandler<ConcurrentPipelines>(handler =>
                 {
-                    foreach (var name in names)                    
+                    foreach (var name in names)
                         handler.Add(GetStopInfoPipeline(),
-                                    new PipelineContext().Add("stop", name));                    
+                                    new PipelineContext().Add("stop", name));
                 });
 
             var context = await pipeline.InvokeAsync();
@@ -109,15 +112,16 @@ namespace PipelinedApi.Controllers
                                 .Where(x => string.Compare(x.Name, direction, true) == 0)
                                 .Select(x =>
                                     x.Tram.Select(
-                                        y => new {
+                                        y => new
+                                        {
                                             dueMins = y.DueMins,
                                             destination = y.Destination
                                         }))
                 };
-                objects.Add(res);                                             
+                objects.Add(res);
             }
-                            
-            return Ok(objects.ToArray());         
+
+            return Ok(objects.ToArray());
         }
     }
 

@@ -5,6 +5,7 @@ using PipelinedApi.Handlers.Rtpi;
 using PipelinedApi.Models;
 using Tumble.Client.Handlers;
 using Tumble.Core;
+using Tumble.Handlers.Miscellaneous;
 
 namespace PipelinedApi.Controllers
 {
@@ -19,46 +20,58 @@ namespace PipelinedApi.Controllers
             _handlers = pipelineHandlerCollection;
         }
 
+        private PipelineRequest GetRouteListInformationPipeline() =>
+            new PipelineRequest()
+                .AddHandler<ContextParameters>(
+                    handler => handler
+                        .Add("endpoint", "/routeListInformation"))
+                .AddHandler(_handlers.Get<SetEndpoint>())
+                .AddHandler<ContextQueryParameters>(handler => handler
+                        .Add("operator"))
+                .AddHandler(_handlers.Get<InvokeGetRequest>())
+                .AddHandler<ParseSuccessResponse<OperatorAndRoute>>();
 
         [HttpGet("{operatorId}")]
         public async Task<IActionResult> GetRouteInformation([FromRoute] string operatorId)
         {
-            var pipeline = new PipelineRequest()
-                .AddHandlerFromCollection<SetEndpoint>(_handlers)
-                .AddHandler<ContextQueryParameters>(handler =>
-                    handler.Add("operator"))
-                .AddHandlerFromCollection<InvokeGetRequest>(_handlers)
-                .AddHandler<ParseSuccessResponse<OperatorAndRoute>>();                
+            var context = await new PipelineRequest()
+                .AddHandler<GenerateObjectResult<ApiResponse<OperatorAndRoute>>>()
+                .AddHandlers(GetRouteListInformationPipeline())
+                .InvokeAsync(ctx =>
+                    ctx.Add("operator", operatorId));
+           
+            if (context.GetFirst(out IActionResult response))
+                return response;
 
-            var context = new PipelineContext()
-                .Add("endpoint", "/routeListInformation")
-                .Add("operator", operatorId);
-
-            await pipeline.InvokeAsync(context);
-
-            return Ok(context.Get<ApiResponse<OperatorAndRoute>>("response"));
+            return new StatusCodeResult(500);
         }
 
+        private PipelineRequest GetRouteInformationPipeline() =>
+            new PipelineRequest()
+                .AddHandler<ContextParameters>(
+                    handler => handler
+                        .Add("endpoint", "/routeInformation"))
+                .AddHandler(_handlers.Get<SetEndpoint>())
+                .AddHandler<ContextQueryParameters>(handler =>
+                    handler.Add("operator")
+                           .Add("routeId"))
+                .AddHandler(_handlers.Get<InvokeGetRequest>())
+                .AddHandler<ParseSuccessResponse<RouteInfo>>();
 
         [HttpGet("{operatorId}/{routeId}")]
         public async Task<IActionResult> GetRouteInformation([FromRoute] string operatorId, [FromRoute] string routeId)
         {
-            var pipeline = new PipelineRequest()
-                .AddHandlerFromCollection<SetEndpoint>(_handlers)
-                .AddHandler<ContextQueryParameters>(handler =>
-                    handler.Add("operator")
-                           .Add("routeId"))
-                .AddHandlerFromCollection<InvokeGetRequest>(_handlers)
-                .AddHandler<ParseSuccessResponse<RouteInfo>>();
+            var context = await new PipelineRequest()
+                .AddHandler<GenerateObjectResult<ApiResponse<RouteInfo>>>()
+                .AddHandlers(GetRouteInformationPipeline())
+                .InvokeAsync(ctx => ctx
+                    .Add("operator", operatorId)
+                    .Add("routeId", routeId));
+           
+            if (context.GetFirst(out IActionResult response))
+                return response;
 
-            var context = new PipelineContext()
-                .Add("endpoint", "/routeInformation")
-                .Add("operator", operatorId)
-                .Add("routeId", routeId);
-
-            await pipeline.InvokeAsync(context);
-
-            return Ok(context.Get<ApiResponse<RouteInfo>>("response"));
+            return new StatusCodeResult(500);
         }
     }
 }
