@@ -36,13 +36,18 @@ namespace PipelinedApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetStations()
         {
-            var context = await GetStationsPipeline()
+            var context = await new PipelineRequest()
+                .AddHandler<GenerateObjectResult<IEnumerable<DublinBikeStation>>>()
+                .AddHandlers(GetStationsPipeline())
                 .InvokeAsync(ctx => ctx
                     .Add("endpoint", "stations")
                     .Add("contract", "Dublin")
                     .Add("apiKey", _apiKey));
-            
-            return Ok(context.Get<IEnumerable<DublinBikeStation>>("response"));
+
+            if (context.GetFirst(out IActionResult response))
+                return response;
+
+            return new StatusCodeResult(500);
         }
 
         private PipelineRequest GetStationPipeline() =>
@@ -57,13 +62,18 @@ namespace PipelinedApi.Controllers
         [HttpGet("{stationId}")]
         public async Task<IActionResult> GetStation([FromRoute]int stationId)
         {
-            var context = await GetStationPipeline()
+            var context = await new PipelineRequest()
+                .AddHandler<GenerateObjectResult<DublinBikeStation>>()
+                .AddHandlers(GetStationPipeline())
                 .InvokeAsync(ctx => ctx
                     .Add("endpoint", $"stations/{stationId}")
                     .Add("contract", "Dublin")
                     .Add("apiKey", _apiKey));
-           
-            return Ok(context.Get<DublinBikeStation>("response"));
+
+            if (context.GetFirst(out IActionResult response))
+                return response;
+
+            return new StatusCodeResult(500);
         }
         
     }
