@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using PipelinedApi.Handlers;
+using PipelinedApi.Handlers.Luas;
 using PipelinedApi.Models;
 using PipelinedApi.Models.Extensions;
 using Tumble.Client.Handlers;
@@ -30,22 +31,21 @@ namespace PipelinedApi.Controllers
                     handler => handler.Add("encrypt", "false")
                                       .Add("action", "list"))
                 .AddHandler<InvokeGetRequest>()
-                .AddHandler<Handlers.Luas.ParseListResponse>();                
+                .AddHandler<ValidateLuasResponse>()
+                .AddHandler<ParseListResponse>();                
              
-        private async Task<LuasLines> GetStopListAsync()
-        {
-            var context = await new PipelineRequest()
-                .AddHandlers(GetLuasStopListPipeline())
-                .InvokeAsync();
-
-            return context.Get<LuasLines>("response");
-        }
-
         [HttpGet("list")]
         public async Task<IActionResult> GetStopList()
         {
-            var response = await GetStopListAsync();
-            return Ok(response);
+            var context = await new PipelineRequest()
+                .AddHandler<GenerateObjectResult<LuasLines>>()
+                .AddHandlers(GetLuasStopListPipeline())
+                .InvokeAsync();
+
+            if (context.GetFirst(out IActionResult response))
+                return response;
+
+            return new StatusCodeResult(500);
         }
 
         private PipelineRequest GetStopInfoPipeline() =>
@@ -57,18 +57,22 @@ namespace PipelinedApi.Controllers
                 .AddHandler<ContextQueryParameters>(
                     handler => handler.Add("stop"))
                 .AddHandler<InvokeGetRequest>()
-                .AddHandler<Handlers.Luas.ParseStopResponse>();
+                .AddHandler<ValidateLuasResponse>()
+                .AddHandler<ParseStopResponse>();
 
         [HttpGet("{stopId}")]
         public async Task<IActionResult> GetStopInfo([FromRoute] string stopId)
         {
             var context = await new PipelineRequest()
+                .AddHandler<GenerateObjectResult<LuasStop>>()
                 .AddHandlers(GetStopInfoPipeline())
                 .InvokeAsync(ctx => ctx
-                    .Add("stop", stopId));            
-           
-            var response = context.Get<LuasStop>("response");
-            return Ok(response);
+                    .Add("stop", stopId));
+
+            if (context.GetFirst(out IActionResult response))
+                return response;
+
+            return new StatusCodeResult(500);            
         }
 
         [HttpGet("{line}/{direction}")]
@@ -79,8 +83,10 @@ namespace PipelinedApi.Controllers
             if (!directions.Any(x => string.Compare(x, direction, true) == 0))
                 return BadRequest(new { error = "Invalid direction specified", directions });
 
-            var stopList = await GetStopListAsync();
-                
+            var context = await GetLuasStopListPipeline().InvokeAsync();
+            if (!context.GetFirst(out LuasLines stopList))            
+                return BadRequest(new { error = "Error retrieving stop info" });
+                                        
             var index = stopList.GetIndexOfShortName(line);
             if (index == -1)
                 return BadRequest(new { error = "Invalid line specified", lines = stopList.GetLineShortNames() });
@@ -95,11 +101,10 @@ namespace PipelinedApi.Controllers
                                     new PipelineContext().Add("stop", name));
                 });
 
-            var context = await pipeline.InvokeAsync();
+            context = await pipeline.InvokeAsync();
             var contexts = context.Get<PipelineContext>();
 
             List<object> objects = new List<object>();
-
             foreach (var ctx in contexts)
             {
                 var luasStops = ctx.Get<LuasStop>("response");
