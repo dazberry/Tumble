@@ -19,10 +19,11 @@ namespace PipelinedApi.Handlers.DublinBikes
                 if (responseMessage.IsSuccessStatusCode)
                 {
                     var result = await responseMessage.Content.ReadAsStringAsync();
-                    var response = JsonConvert.DeserializeObject<DublinBikeStation>
-                        (result, new UnixDateTimeConverter());
+                    var response = JsonConvert.DeserializeObject<DublinBikeStation>(result);                        
                     context.Add("response", response);                   
                 }
+
+                await next.Invoke();
             }
             else
                 throw new PipelineDependencyException<HttpResponseMessage>(this);

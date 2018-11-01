@@ -21,14 +21,30 @@ namespace PipelinedApi.Models
         public int Available_bikes { get; set; }
         public string Status { get; set; }        
 
-        //todo
-        //public DateTime Last_update { get; set; }
+        [JsonConverter(typeof(MicrosecondEpochConverter))]        
+        public DateTime Last_update { get; set; }
     }
 
     public class DublinBikeStationPosition
     {
         public decimal Lat { get; set; }
         public decimal Lng { get; set; }
+    }
+
+    public class MicrosecondEpochConverter : DateTimeConverterBase
+    {
+        private static readonly DateTime _epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        public override bool CanConvert(Type objectType) =>
+            objectType == typeof(DateTime);        
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) =>
+            writer.WriteRawValue($"\"{((DateTime)value).ToUniversalTime().ToString("s")}Z\"");
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) =>
+            reader.Value != null
+                ? _epoch.AddSeconds((long)reader.Value / 1000d)
+                : (DateTime?)null;        
     }
 
 }
