@@ -31,10 +31,11 @@ namespace PipelinedApi.Controllers
                     handler.Add("contract")
                            .Add("apiKey"))
                 .AddHandler(_handlers.Get<InvokeGetRequest>())
-                .AddHandler<ParseStationsResponse>();
+                .AddHandler<ParseStationsResponse>()
+                .AddHandler<OrderStationsResponse>();
 
         [HttpGet]
-        public async Task<IActionResult> GetStations()
+        public async Task<IActionResult> GetStations([FromQuery]string orderBy)
         {
             var context = await new PipelineRequest()
                 .AddHandler<GenerateObjectResult<IEnumerable<DublinBikeStation>>>()
@@ -42,7 +43,9 @@ namespace PipelinedApi.Controllers
                 .InvokeAsync(ctx => ctx
                     .Add("endpoint", "stations")
                     .Add("contract", "Dublin")
-                    .Add("apiKey", _apiKey));
+                    .Add("apiKey", _apiKey)
+                    .Add("orderBy", orderBy, !string.IsNullOrEmpty(orderBy))
+                );
 
             if (context.GetFirst(out IActionResult response))
                 return response;
