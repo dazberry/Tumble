@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Web;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Tumble.Client.Extensions
 {
