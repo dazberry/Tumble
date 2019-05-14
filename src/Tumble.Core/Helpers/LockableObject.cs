@@ -5,7 +5,7 @@ namespace Tumble.Core.Helpers
     public class LockableObject<T>
           where T : class
     {
-        private object _lock = new object();
+        private readonly object _lock = new object();
 
         private T _object;
         public T Object

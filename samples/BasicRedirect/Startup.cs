@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Tumble.Client.Handlers;
-using Tumble.Handlers;
-using Tumble.Handlers.Redirection;
+using Tumble.Handlers.Proxy;
 using Tumble.Middleware;
 
 namespace BasicRedirect.Web.Api
@@ -30,19 +25,19 @@ namespace BasicRedirect.Web.Api
             }
 
             app.UseProxyMiddleware(req =>
-            {
-                req.AddHandler<HttpRequestHandler>()
+            {                
+                req.AddHandler<HttpRequestHandler>()                   
                    .AddHandler<HttpResponseHandler>()
-                   .AddHandler<HostRedirect>(handler =>
+                   .AddHandler<HostRedirectHandler>(handler =>
                    {
                        handler.RedirectHost = "localhost";
                        handler.RedirectPort = 50596;
                    })
-                   .AddHandler<ClientRequest>(handler =>
-                   {
+                   .AddHandler<ClientRequestHandler>(handler =>
+                   {                       
                        handler.RequestTimeout = TimeSpan.FromSeconds(60);
                    });
-                   
+
             });
         }
     }

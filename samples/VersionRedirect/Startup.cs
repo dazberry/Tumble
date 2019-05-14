@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Tumble.Handlers.Miscellaneous;
 using Tumble.Middleware;
+using VersionRedirect.Contexts;
 using VersionRedirect.Handlers;
 
 namespace VersionRedirect
@@ -33,13 +33,13 @@ namespace VersionRedirect
 
             var config = new PipelineMiddlewareConfiguration()
             {
-                AfterPipelineInvoke = PipelineMiddlewareEnum.Continue
+                AfterPipelineInvoke = PipelineMiddlewareAfterInvoke.Continue
             };
 
-            app.UseProxyMiddleware(req =>
+            app.UseProxyMiddleware<VersionContext>(req =>
             {
                 req.AddHandler<VersionHandler>()
-                   .AddHandler<RedirectHandler>();                   
+                   .AddHandler<RedirectHandler>();
 
             }, config);
 

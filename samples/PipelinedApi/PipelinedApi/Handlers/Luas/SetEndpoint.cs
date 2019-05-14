@@ -1,19 +1,22 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Tumble.Core;
-using Tumble.Core.Notifications;
-using Tumble.Client.Extensions;
+using Tumble.Core.Handlers;
 
 namespace PipelinedApi.Handlers.Luas
 {
-    public class SetEndpoint : IPipelineHandler
+    public interface IEndpointContext
+    {
+        string Endpoint { get; set; }
+    }
+
+    public class SetEndpoint : IPipelineHandler<IEndpointContext>
     {
         public Uri BaseUrl { get; set; }
 
-        public async Task InvokeAsync(PipelineContext context, PipelineDelegate next)
+        public async Task InvokeAsync(PipelineDelegate next, IEndpointContext context)
         {
-            context.Add(BaseUrl);
+            context.Endpoint = BaseUrl;
             await next.Invoke();
         }
     }

@@ -1,16 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using PipelinedApi.Models;
 using Tumble.Core;
-using Tumble.Core.Notifications;
 
 namespace PipelinedApi.Handlers
 {
-    public class GenerateObjectResult<T> : IPipelineHandler
+    public interface IGenerateObjectResultContext<T>
     {
-        public async Task InvokeAsync(PipelineContext context, PipelineDelegate next)
+        T Response { get; set; }
+
+        ObjectResult ObjectResult { get; set; }
+    }
+
+    public class GenerateObjectResult : IPipelineHandler<IGenerateObjectResultContext<IEnumerable<DublinBikeStation>>>
+    {
+        public async Task InvokeAsync(PipelineDelegate next, IGenerateObjectResultContext<IEnumerable<DublinBikeStation>> context)
         {
             try
             {
@@ -18,30 +24,26 @@ namespace PipelinedApi.Handlers
             }
             finally
             {
-
-                IActionResult objectResult = null;
-                if (context.Get("response", out T response))
-                    objectResult = new ObjectResult(response) { StatusCode = 200 };
+                if (context.Response != null)
+                    context.ObjectResult = new ObjectResult(context.Response) { StatusCode = 200 };
                 else
                 {
-                    objectResult = new ObjectResult(
+                    context.ObjectResult = new ObjectResult(
                         new
                         {
-                            context.Id,
-                            notifications = context
-                                .Get<Notification>()
-                                .Select((x, i) =>
-                                new
-                                {
-                                    id = i + 1,
-                                    Handler = x.Handler.ToString(),
-                                    x.ErrorMessage
-                                })
+                            //context.Id,
+                            //notifications = context
+                            //    .Get<Notification>()
+                            //    .Select((x, i) =>
+                            //    new
+                            //    {
+                            //        id = i + 1,
+                            //        Handler = x.Handler.ToString(),
+                            //        x.ErrorMessage
+                            //    })
                         })
                     { StatusCode = 500 };
-                }
-
-                context.Add<IActionResult>(objectResult);
+                }                
             }
         }
     }

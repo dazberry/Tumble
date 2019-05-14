@@ -1,12 +1,20 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Tumble.Core;
+using Tumble.Middleware.Contexts;
 
 namespace Tumble.Middleware
 {
-    public enum PipelineMiddlewareEnum { Continue, Exit };
-    
-    public class PipelineMiddleware
+    public enum PipelineMiddlewareAfterInvoke { Continue = 0, Exit = 1 };
+
+    public class MiddlewareContext : IMiddlewareContext
+    {
+        public HttpContext HttpContext { get; set; }
+        public PipelineMiddlewareAfterInvoke MiddlewareCompletion { get; set; }
+    }
+
+    public class PipelineMiddleware<T>
+        where T : IMiddlewareContext, new()
     {
         private readonly RequestDelegate _next;
         private readonly PipelineRequest _pipelineRequest;
@@ -24,22 +32,20 @@ namespace Tumble.Middleware
         public async Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_middlewareConfiguration.StartsWithSegment))
-            {                             
-                var pipelineContext = new PipelineContext();
-                pipelineContext
-                    .Add(httpContext);
-                
-                await _pipelineRequest.InvokeAsync(pipelineContext);
-
-                if (pipelineContext.GetFirst(out PipelineMiddlewareEnum pipelineMiddlewareEnum))                    
+            {
+                var context = new T
                 {
-                    if (pipelineMiddlewareEnum == PipelineMiddlewareEnum.Exit)
-                        return;
-                }
-                else
-                if (_middlewareConfiguration.AfterPipelineInvoke == PipelineMiddlewareEnum.Exit)
+                    HttpContext = httpContext,
+                    MiddlewareCompletion = PipelineMiddlewareAfterInvoke.Continue
+                };
+
+                await _pipelineRequest.InvokeAsync(context);
+
+                if (_middlewareConfiguration.AfterPipelineInvoke == PipelineMiddlewareAfterInvoke.Exit)
                     return;
-                                                                        
+                if (context.MiddlewareCompletion == PipelineMiddlewareAfterInvoke.Exit)                    
+                    return;                
+                                                                                        
             }
             await _next(httpContext);            
         }

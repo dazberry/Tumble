@@ -7,33 +7,43 @@ namespace Tumble.Core
 {
     public class PipelineHandlerCollection
     {
-        private IList<IPipelineHandler> _handlers = new List<IPipelineHandler>();
+        private IList<PipelineHandlerInfo> _pipelineHandlers = new List<PipelineHandlerInfo>();
 
-        public PipelineHandlerCollection Add(IPipelineHandler handler) =>
-            AddRange(handler);
+        public PipelineHandlerCollection Add<THandler>(THandler pipelineHandler) 
+            where THandler : class, new()
+        {
+            if (pipelineHandler == null)            
+                throw new ArgumentNullException(nameof(pipelineHandler));
+                       
+            _pipelineHandlers.Add(
+                new PipelineHandlerInfo()
+                    .SetHandler(pipelineHandler));
 
-        public PipelineHandlerCollection Add<T>(Action<T> handlerAction = null)
-            where T : IPipelineHandler, new()
-        {
-            var handler = new T();
-            _handlers.Add(handler);
-            handlerAction?.Invoke(handler);            
-            return this;
-        }
-        public PipelineHandlerCollection AddRange(params IPipelineHandler[] handlers)
-        {
-            foreach (var handler in handlers)
-                _handlers.Add(handler);
             return this;
         }
 
-        public int Count() => _handlers.Count();
-        public IPipelineHandler this[int index] => _handlers[index];
+        public PipelineHandlerCollection Add<THandler>(Action<THandler> handlerAction = null)
+            where THandler : class, new()
+        {
+            var pipelineHandler = new THandler();            
+            handlerAction?.Invoke(pipelineHandler);
 
-        public IPipelineHandler Get<T>()
-            where T : IPipelineHandler =>
-            _handlers.Where(x => x is T).FirstOrDefault();                   
+            _pipelineHandlers.Add(
+                new PipelineHandlerInfo()
+                    .SetHandler(pipelineHandler));
+
+            return this;
+        }
+
+        public int Count() => _pipelineHandlers.Count();
+
+        public PipelineHandlerInfo this[int index] => _pipelineHandlers[index];
+
+        public PipelineHandlerInfo Get<THandler>()
+            where THandler : class =>
+                _pipelineHandlers.Where(x => x.Is<THandler>())
+                    .FirstOrDefault();                    
     }
 
-    
-}
+
+    }

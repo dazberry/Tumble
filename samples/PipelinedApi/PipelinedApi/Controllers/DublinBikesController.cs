@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -26,20 +24,21 @@ namespace PipelinedApi.Controllers
 
         private PipelineRequest GetStationsPipeline() =>
             new PipelineRequest()
-                .AddHandler(_handlers.Get<SetEndpoint>())
-                .AddHandler<ContextQueryParameters>(handler =>
+                .AddHandlers(_handlers.Get<SetEndpoint>())
+                .AddHandler<QueryParametersHander>(handler =>
                     handler.Add("contract")
-                           .Add("apiKey"))
-                .AddHandler(_handlers.Get<InvokeGetRequest>())
+                           .Add("apiKey")
+                 )
+                .AddHandlers(_handlers.Get<InvokeGetRequest>())
                 .AddHandler<ParseStationsResponse>()
                 .AddHandler<OrderStationsResponse>();
 
         [HttpGet]
         public async Task<IActionResult> GetStations([FromQuery]string orderBy)
-        {
+        {           
             var context = await new PipelineRequest()
-                .AddHandler<GenerateObjectResult<IEnumerable<DublinBikeStation>>>()
-                .AddHandlers(GetStationsPipeline())
+                .AddHandler<GenerateObjectResultHandler<IEnumerable<DublinBikeStation>>>()                
+                .AddHandler(GetStationsPipeline())
                 .InvokeAsync(ctx => ctx
                     .Add("endpoint", "stations")
                     .Add("contract", "Dublin")
@@ -65,16 +64,16 @@ namespace PipelinedApi.Controllers
         [HttpGet("{stationId}")]
         public async Task<IActionResult> GetStation([FromRoute]int stationId)
         {
-            var context = await new PipelineRequest()
-                .AddHandler<GenerateObjectResult<DublinBikeStation>>()
-                .AddHandlers(GetStationPipeline())
-                .InvokeAsync(ctx => ctx
-                    .Add("endpoint", $"stations/{stationId}")
-                    .Add("contract", "Dublin")
-                    .Add("apiKey", _apiKey));
+            //var context = await new PipelineRequest()
+            //    .AddHandler<GenerateObjectResult<DublinBikeStation>>()
+            //    .AddHandlers(GetStationPipeline())
+            //    .InvokeAsync(ctx => ctx
+            //        .Add("endpoint", $"stations/{stationId}")
+            //        .Add("contract", "Dublin")
+            //        .Add("apiKey", _apiKey));
 
-            if (context.GetFirst(out IActionResult response))
-                return response;
+            //if (context.GetFirst(out IActionResult response))
+            //    return response;
 
             return new StatusCodeResult(500);
         }

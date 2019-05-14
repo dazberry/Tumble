@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Tumble.Core;
-using Tumble.Core.Notifications;
 
 namespace PipelinedApi.Handlers.Luas
 {
     public class ValidateLuasResponse : IPipelineHandler
     {
-        public async Task InvokeAsync(PipelineContext context, PipelineDelegate next)
+        public async Task InvokeAsync(IPipelineContext context, PipelineDelegate next)
         {
-            if (context.GetFirst(out HttpResponseMessage responseMessage))
+            if (context.Get(out HttpResponseMessage responseMessage))
             {
                 if (responseMessage.IsSuccessStatusCode)
                 {
@@ -28,8 +24,8 @@ namespace PipelinedApi.Handlers.Luas
 
                 await next.Invoke();
             }
-            else
-                throw new PipelineDependencyException<HttpRequestMessage>(this);
+            //else
+            //    throw new PipelineDependencyException<HttpRequestMessage>(this);
         }
     }
 }

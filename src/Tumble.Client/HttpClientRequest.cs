@@ -9,7 +9,7 @@ namespace Tumble.Client
     public class HttpClientRequest
     {
         private static HttpClient _httpClient = new HttpClient();
-        private HttpRequestMessage _httpRequestMessage;
+        private readonly HttpRequestMessage _httpRequestMessage;
                
         private HttpClientRequest() : this(new HttpRequestMessage())
         {            

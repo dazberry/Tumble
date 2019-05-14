@@ -9,22 +9,22 @@ namespace PipelinedApi.Handlers.Rtpi
 {
     public class ParseSuccessResponse<T> : IPipelineHandler
     {
-        public async Task InvokeAsync(PipelineContext context, PipelineDelegate next)
+        public async Task InvokeAsync(IPipelineContext context, PipelineDelegate next)
         {
-            if (context.GetFirst(out HttpResponseMessage responseMessage))
+            if (context.Get(out HttpResponseMessage responseMessage))
             {
                 if (responseMessage.IsSuccessStatusCode)
                 {
                     var result = await responseMessage.Content.ReadAsStringAsync();
                     var response = JsonConvert.DeserializeObject<ApiResponse<T>>
                         (result, new IsoDateTimeConverter { DateTimeFormat = "dd/MM/yyyy HH:mm:ss" });
-                    context.Add("response", response);
+                    context.Set(response);
 
                     await next.Invoke();
                 }
             }
-            else
-                throw new PipelineDependencyException<HttpResponseMessage>(this);
+            //else
+            //    throw new PipelineDependencyException<HttpResponseMessage>(this);
         }
 
     }

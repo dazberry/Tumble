@@ -6,9 +6,6 @@ using PipelinedApi.Handlers;
 using PipelinedApi.Models;
 using PipelinedApi.Handlers.Rtpi;
 using Tumble.Core;
-using Tumble.Core.Notifications;
-using System.Linq;
-using Tumble.Handlers.Miscellaneous;
 
 namespace PipelinedApi.Controllers
 {
@@ -24,25 +21,29 @@ namespace PipelinedApi.Controllers
             _handlers = pipelineHandlerCollection;
         }
 
-        private PipelineRequest GetOperatorInformationPipeline() =>
+        private PipelineRequest GetOperatorInformationPipeline()
+        {
+            var request = 
             new PipelineRequest()
-                .AddHandler<ContextParameters>(
-                    handler => handler
-                        .Add("endpoint", "/operatorinformation"))
-                .AddHandler(_handlers.Get<SetEndpoint>())
+                //.AddHandler<ContextParameters>(
+                //    handler => handler
+                //        .Add("endpoint", "/operatorinformation"))
+                //.AddHandler(_handlers.Get<SetEndpoint>())
                 .AddHandler<InvokeGetRequest>()
-                .AddHandler<ParseSuccessResponse<OperatorInformation>>();
+                //.AddHandler<ParseSuccessResponse<OperatorInformation>>();
+            return request;
+        }
 
         [HttpGet("list")]
         public async Task<IActionResult> Get()
         {
-            var context = await new PipelineRequest()
-                .AddHandler<GenerateObjectResult<ApiResponse<OperatorInformation>>>()
-                .AddHandlers(GetOperatorInformationPipeline())
-                .InvokeAsync();
+            //var context = await new PipelineRequest()
+            //    .AddHandler<GenerateObjectResult<ApiResponse<OperatorInformation>>>()
+            //    .AddHandlers(GetOperatorInformationPipeline())
+            //    .InvokeAsync();
 
-            if (context.GetFirst(out IActionResult response))
-                return response;
+            //if (context.GetFirst(out IActionResult response))
+            //    return response;
 
             return new StatusCodeResult(500);
         }

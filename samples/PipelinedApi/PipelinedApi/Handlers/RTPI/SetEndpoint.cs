@@ -2,18 +2,23 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Tumble.Core;
-using Tumble.Core.Notifications;
 using Tumble.Client.Extensions;
+using Tumble.Core.Handlers;
 
 namespace PipelinedApi.Handlers.Rtpi
 {
-    public class SetEndpoint : IPipelineHandler
+    public class EndpointContext : PipelineContext
+    {
+        public string Endpoint { get; set; }
+    }
+
+    public class SetEndpoint : PipelineHandler<EndpointContext>
     {
         public Uri BaseUrl { get; set; }
 
-        public async Task InvokeAsync(PipelineContext context, PipelineDelegate next)
+        public override async Task InvokeAsync(EndpointContext context, PipelineDelegate next)
         {            
-            if (context.Get("endpoint", out string endPoint))              
+            if (context.Get(out string endPoint))              
             {
                 if (BaseUrl == null)
                 {
@@ -21,12 +26,13 @@ namespace PipelinedApi.Handlers.Rtpi
                     return;
                 }
                 var uri = BaseUrl.Append(endPoint);
-                context.Add(uri);
+                context.Set(uri);
                 await next.Invoke();
             }
             else
                 context.AddNotification(this, "Missing endpoint information");
 
         }
+
     }
 }

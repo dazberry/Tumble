@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PipelinedApi.Models;
@@ -7,45 +6,53 @@ using Tumble.Core;
 
 namespace PipelinedApi.Handlers.DublinBikes
 {
-    public class OrderStationsResponse : IPipelineHandler
+    public interface IDublinBikeStationsContext
+    {
+        IEnumerable<DublinBikeStation> DublinBikeStations { get; set; }
+    }
+
+    public interface IDublinBikeStationsOrderByContext
+    {
+        string OrderBy { get; set; }
+    }
+
+    public class OrderStationsResponse : IPipelineHandler<IDublinBikeStationsContext, IDublinBikeStationsOrderByContext>
     {
         private string[] orderIdentifiers = new string[] { "Number", "Name", "Available_bikes", "Available_bike_stands", "Last_update" };
 
-        public async Task InvokeAsync(PipelineContext context, PipelineDelegate next)
+        public async Task InvokeAsync(PipelineDelegate next, 
+            IDublinBikeStationsContext dbsContext,
+            IDublinBikeStationsOrderByContext orderContext)
         {
-            if (context.GetFirst(out IEnumerable<DublinBikeStation> response))
+            var stations = dbsContext.DublinBikeStations;
+            if (stations?.Any() ?? false)
             {
-                
-                if (context.Get("orderBy", out string value))
+                var index = orderIdentifiers
+                        .Select((x, i) => new { index = i, identifer = x })
+                        .Where(x => string.Compare(x.identifer, orderContext.OrderBy, true) == 0)
+                        .Select(x => x.index)
+                        .FirstOrDefault();
+
+                switch (index)
                 {
-                    var index = orderIdentifiers
-                                    .Select((x, i) => new { index = i, identifer = x })
-                                    .Where(x => string.Compare(x.identifer, value, true) == 0)
-                                    .Select(x => x.index)
-                                    .FirstOrDefault();
-
-                    switch (index)
-                    {
-                        case 1:
-                            response = response.OrderBy(x => x.Name);                            
-                            break;
-                        case 2:
-                            response = response.OrderByDescending(x => x.Available_bikes);
-                            break;
-                        case 3:
-                            response = response.OrderByDescending(x => x.Available_bike_stands);
-                            break;
-                        case 4:
-                            response = response.OrderByDescending(x => x.Last_update);
-                            break;
-                        default:
-                            response = response.OrderBy(x => x.Number);
-                            break;
-                    }
-
-                    context.AddOrReplace("response", response.Select(x => x));                                    
+                    case 1:
+                        stations = stations.OrderBy(x => x.Name);
+                        break;
+                    case 2:
+                        stations = stations.OrderByDescending(x => x.Available_bikes);
+                        break;
+                    case 3:
+                        stations = stations.OrderByDescending(x => x.Available_bike_stands);
+                        break;
+                    case 4:
+                        stations = stations.OrderByDescending(x => x.Last_update);
+                        break;
+                    default:
+                        stations = stations.OrderBy(x => x.Number);
+                        break;
                 }
-            }
+                dbsContext.DublinBikeStations = stations;
+            }                     
 
             await next.Invoke();
         }

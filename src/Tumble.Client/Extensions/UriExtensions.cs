@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Web;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Tumble.Client.Extensions
 {
@@ -26,7 +25,7 @@ namespace Tumble.Client.Extensions
                     .Select(x => x.Trim('/'))
                     .ToArray();
 
-            return new Uri($"{uri.Scheme}{Uri.SchemeDelimiter}{uri.Host}{(uri.Port == 0 ? "" : $":{uri.Port}")}/{string.Join('/', segments)}{uri.Query}");                      
+            return new Uri($"{uri.Scheme}{Uri.SchemeDelimiter}{uri.Host}{(uri.Port == 0 ? "" : $":{uri.Port}")}/{string.Join("/", segments)}{uri.Query}");                      
         }
 
         public static Uri RemoveQueryKey(this Uri uri, string key)

@@ -1,32 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Tumble.Client.Extensions;
+using Tumble.Client.Contexts;
 using Tumble.Core;
-using Tumble.Core.Notifications;
 
 namespace PipelinedApi.Handlers.DublinBikes
 {
-    public class SetEndpoint : IPipelineHandler
+    public class SetEndpoint : IPipelineHandler<IEndpointContext, IUriContext>
     {
         public Uri BaseUrl { get; set; }
 
-        public async Task InvokeAsync(PipelineContext context, PipelineDelegate next)
+        public async Task InvokeAsync(PipelineDelegate next, IEndpointContext endpointContext, IUriContext uriContext)
         {
-            if (context.Get("endpoint", out string endPoint))
+            if (BaseUrl == null)
             {
-                if (BaseUrl == null)
-                {
-                    context.AddNotification(this, "Missing BaseUrl value");
-                    return;
-                }
-                var uri = BaseUrl.Append(endPoint);
-                context.Add(uri);
-                await next.Invoke();
+                //context.AddNotification(this, "Missing BaseUrl value");
+                return;
             }
-            else
-                context.AddNotification(this, "Missing endpoint information");
+            var uri = BaseUrl.Append(endpointContext.EndPoint);
+            uriContext.Uri = uri;
+
+            await next.Invoke();
         }
     }
 }
