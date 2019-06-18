@@ -5,14 +5,18 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http.Extensions;
-using Tumble.Client.Contexts;
 using Tumble.Client.Parameters;
 using Tumble.Core;
+using Tumble.Core.Contexts;
 
 namespace Tumble.Client.Handlers
-{      
-        
-    public class QueryParametersHander : IPipelineHandler<IHttpClientContext>
+{
+    /// <summary>    
+    /// Sets Context.Uri from BaseUrl
+    /// <para></para>        
+    /// Requires: IContextWriter&lt;Uri&gt;
+    /// </summary>     
+    public class QueryParametersHander : IPipelineHandler<IQueryParameters, IContextResolver<Uri>>
     {
         private QueryParameters _queryParameters = new QueryParameters();
 
@@ -25,47 +29,48 @@ namespace Tumble.Client.Handlers
         public static IEnumerable<KeyValuePair<string, string>> NameValueToKeyValuePairs(NameValueCollection source) =>
             source.AllKeys.SelectMany(source.GetValues, (k, v) => new KeyValuePair<string, string>(k, v));
 
-        public async Task InvokeAsync(PipelineDelegate next, IHttpClientContext context)
+        public async Task InvokeAsync(PipelineDelegate next, IQueryParameters queryParameters, IContextResolver<Uri> uri)
         {
             var handlerParameters = _queryParameters.Get();
-            var contextParameters = context.QueryParameters.Get();
+            var contextParameters = queryParameters.Get();
+
+
+            handlerParameters = handlerParameters.Concat(contextParameters)
+                .GroupBy(x => x.Name)
+                .Select(x => new QueryParameter()
+                {
+                    Name = x.Key,
+                    Optional = x.Where(y => y.Optional == true)
+                                .Any(),
+                    Value = x.Where(y => !string.IsNullOrEmpty(y.Value))
+                                .FirstOrDefault()?.Value
+                });                
+            
 
             if (handlerParameters.Any())
             {
-                var parameters = handlerParameters.GroupJoin(
-                    contextParameters,
-                    hp => hp.Name,
-                    cp => cp.Name,
-                    (hp, cp) =>
-                        cp.FirstOrDefault(x => !string.IsNullOrEmpty(x.Value)) ?? hp                        
-                    );
+                var emptyMandatoryParameters = handlerParameters.Where(x => !x.Optional && string.IsNullOrEmpty(x.Value));
+                if (emptyMandatoryParameters.Any())
+                {
+                    var names = string.Join(", ", emptyMandatoryParameters.Select(x => x.Name));
+                    throw new Exception($"Empty mandatory parameters: {names}");
+                }
 
-                if (parameters.Any(x => !x.Optional && string.IsNullOrEmpty(x.Value)))
-                    throw new Exception(""); //todo
+                var kvp = handlerParameters
+                    .Where(x => !string.IsNullOrEmpty(x.Value))
+                    .Select(x =>
+                        new KeyValuePair<string, string>(x.Name, x.Value));               
 
-                var keyValuePairs = NameValueToKeyValuePairs(
-                    HttpUtility.ParseQueryString(context.Uri.Query));
-
-                keyValuePairs = keyValuePairs.GroupJoin(
-                    parameters
-                        .Where(x => !string.IsNullOrEmpty(x.Value)),
-                    kvp => kvp.Key,
-                    pm => pm.Value,
-                    (kvp, pm) =>
-                    {
-                        if (pm?.Any() ?? false)
-                            return new KeyValuePair<string, string>(pm.First().Name, pm.First().Value);
-                        return kvp;
-                    });
-                
-                var ub = new UriBuilder(context.Uri);
-                QueryBuilder qb = new QueryBuilder(keyValuePairs);
+                kvp.Concat(NameValueToKeyValuePairs(
+                    HttpUtility.ParseQueryString(uri.Get().Query)));
+                                                                  
+                var ub = new UriBuilder(uri.Get());
+                QueryBuilder qb = new QueryBuilder(kvp);
                 ub.Query = qb.ToString();
-                context.Uri = ub.Uri;
-                
-                await next.Invoke();
+                uri.Set(ub.Uri);                               
             }
 
+            await next.Invoke();
         }
     }
 }

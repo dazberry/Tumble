@@ -5,6 +5,7 @@ using Tumble.Core;
 using Tumble.Core.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using Tumble.Handlers.Caching.Contexts;
+using Tumble.Handlers.Contexts;
 
 namespace Tumble.Handlers.Caching
 {
@@ -16,7 +17,7 @@ namespace Tumble.Handlers.Caching
 
     public enum CacheEnum { NoCache, FromCache };
 
-    public class CachingHandler : IPipelineHandler<ICachingContext>
+    public class CachingHandler : IPipelineHandler<ICacheSettingContext, HttpRequestMessage, IHttpResponseMessageContext>
     {
         private readonly IMemoryCache _memoryCache;
         private readonly IDateTimeProvider _dateTimeProvider;
@@ -47,32 +48,31 @@ namespace Tumble.Handlers.Caching
             _memoryCache.Set(cacheKey, cacheItem);
         }
 
-        public async Task InvokeAsync(PipelineDelegate next, ICachingContext context)
-        {
-            var req = context.HttpRequestMessage;
-            var isCacheable = req.Method == HttpMethod.Get && context.UseCache;                
+        public async Task InvokeAsync(PipelineDelegate next, ICacheSettingContext context, HttpRequestMessage httpRequestMessage, IHttpResponseMessageContext httpResponseMessage)
+        {            
+            var isCacheable = httpRequestMessage.Method == HttpMethod.Get && context.UseCache;                
 
             if (isCacheable)
             {
-                var cacheKey = GenerateCachekey(req);
+                var cacheKey = GenerateCachekey(httpRequestMessage);
                 var (isCached, isStale, cacheEntry) = GetCacheEntry(cacheKey);
 
                 if (isCached && !isStale)
                 {
                     context.FromCache = true;
-                    context.HttpResponseMessage = cacheEntry.HttpResponseMessage;                    
+                    httpResponseMessage.HttpResponseMessage = cacheEntry.HttpResponseMessage;                    
                     return;
                 }
 
                 await next();
 
-                var resp = context.HttpResponseMessage;                
+                var resp = httpResponseMessage.HttpResponseMessage;                
                 if (resp?.IsSuccessStatusCode ?? false)
                 {
                     if (isCached)
                     {
                         context.FromCache = true;
-                        context.HttpResponseMessage = cacheEntry.HttpResponseMessage;
+                        httpResponseMessage.HttpResponseMessage = cacheEntry.HttpResponseMessage;
                     }
                     else
                     {

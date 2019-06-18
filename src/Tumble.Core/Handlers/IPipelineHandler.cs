@@ -3,6 +3,11 @@
 namespace Tumble.Core
 {
     public delegate Task PipelineDelegate();    
+
+    public interface IPipelineHandler
+    {
+        Task InvokeAsync(PipelineDelegate next);
+    }
     
     public interface IPipelineHandler<T> 
     {

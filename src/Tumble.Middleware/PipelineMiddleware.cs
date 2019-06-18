@@ -7,10 +7,18 @@ namespace Tumble.Middleware
 {
     public enum PipelineMiddlewareAfterInvoke { Continue = 0, Exit = 1 };
 
-    public class MiddlewareContext : IMiddlewareContext
+    public class MiddlewareContext : IMiddlewareContext, IPipelineHandlerContextResolver
     {
         public HttpContext HttpContext { get; set; }
         public PipelineMiddlewareAfterInvoke MiddlewareCompletion { get; set; }
+
+        public object Resolve<THandler, TContext, TResolvedContext>(THandler handler, TContext context, int index)
+        {
+            if (typeof(TResolvedContext) == typeof(HttpContext))
+                return HttpContext;            
+
+            return context;
+        }
     }
 
     public class PipelineMiddleware<T>

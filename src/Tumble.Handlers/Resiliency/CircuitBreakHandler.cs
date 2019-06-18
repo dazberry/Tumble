@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Tumble.Client.Extensions;
 using Tumble.Core;
 using Tumble.Core.Helpers;
 using Tumble.Core.Providers;
-using Tumble.Handlers.Proxy.Contexts;
 
 namespace Tumble.Handlers.Resiliency
 {
@@ -21,7 +20,7 @@ namespace Tumble.Handlers.Resiliency
 
     public enum CircuitBreakerEnum { OpenState };
 
-    public class CircuitBreakHandler : IPipelineHandler<IHttpRequestResponseContext>
+    public class CircuitBreakHandler : IPipelineHandler<HttpResponseMessage>
     {
         
         public IDateTimeProvider _dateTimeProvider;
@@ -41,7 +40,7 @@ namespace Tumble.Handlers.Resiliency
             };
         }
 
-        public async Task InvokeAsync(PipelineDelegate next, IHttpRequestResponseContext context)
+        public async Task InvokeAsync(PipelineDelegate next, HttpResponseMessage httpResponseMessage)
         {
             //context.Remove(CircuitBreakerEnum.OpenState);
 
@@ -54,11 +53,8 @@ namespace Tumble.Handlers.Resiliency
             {
                 await next.Invoke();
 
-                //if (!context.GetFirst(out HttpResponseMessage httpResponseMessage))
-                //    throw new PipelineDependencyException<HttpResponseMessage>(this);
-
                 _circuitState.Invoke(x =>
-                    x.Update(!context.HttpResponseMessage.IsTransientFailure()));
+                    x.Update(!httpResponseMessage.IsTransientFailure()));
             }
             else
             {

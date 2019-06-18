@@ -1,9 +1,9 @@
-﻿using Tumble.Handlers.Proxy.Contexts;
+﻿using System.Net.Http;
 
 namespace Tumble.Handlers.Caching.Contexts
 {
-    public interface IEtagCachingContext : IHttpRequestResponseContext
-    {        
+    public interface IEtagCachingContext
+    {               
         bool FromCache { get; set; }
     }
 }

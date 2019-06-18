@@ -1,28 +1,27 @@
 ﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Tumble.Core;
-using Tumble.Handlers.Contexts;
-using Tumble.Handlers.Proxy.Contexts;
 
 namespace Tumble.Handlers.Proxy
 {
     /// <summary>
-    /// Requires IHttpRequestMessageContext. Sets HttpRequestMessage.RequestUri
+    /// Requires HttpRequestMessage
     /// </summary>
-    public class HostRedirectHandler : IPipelineHandler<IHttpRequestMessageContext>
+    public class HostRedirectHandler : IPipelineHandler<HttpRequestMessage>
     {
         public string RedirectHost { get; set; }
         public int RedirectPort { get; set; }
 
-        public async Task InvokeAsync(PipelineDelegate next, IHttpRequestMessageContext context)
+        public async Task InvokeAsync(PipelineDelegate next, HttpRequestMessage httpRequestMessage)
         {
-            UriBuilder builder = new UriBuilder(context.HttpRequestMessage.RequestUri)
+            UriBuilder builder = new UriBuilder(httpRequestMessage.RequestUri)
             {
                 Host = RedirectHost,
                 Port = RedirectPort
             };
             var redirectUri = builder.Uri;
-            context.HttpRequestMessage.RequestUri = redirectUri;
+            httpRequestMessage.RequestUri = redirectUri;
 
             await next.Invoke();
         }

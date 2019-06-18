@@ -28,7 +28,7 @@ namespace Tumble.Core
 
             _pipelineInvokeMethodInfo = pipelineHandler.GetType().GetMethod("InvokeAsync");
             if (_pipelineInvokeMethodInfo == null)
-                throw new Exception("");
+                throw new Exception($"Handler {pipelineHandler.GetType()} contains no InvokeAsync method");
             return this;
         }
 
@@ -60,17 +60,39 @@ namespace Tumble.Core
 
         public Task InvokePipelineHandler<T>(PipelineDelegate pipelineDelegate, T context)
         {
-            var parameterCount = _pipelineInvokeMethodInfo.GetParameters().Count();
+            MethodInfo resolverMethodInfo = null;
+            if (context is IPipelineHandlerContextResolver)            
+                resolverMethodInfo = typeof(IPipelineHandlerContextResolver)
+                    .GetMethod("Resolve");
+
             var parameters =
                 new object[] { pipelineDelegate }
                 .Concat(
-                    Enumerable.Range(1,  parameterCount - 1)
-                    .Select(x => (object)context)
-                ).ToArray();
+                    _pipelineInvokeMethodInfo.GetParameters()
+                    .Skip(1)
+                    .Select((x,i) =>
+                    {
+                        if (resolverMethodInfo == null)
+                            return (object)context;
 
-            return (Task)_pipelineInvokeMethodInfo.Invoke(_pipelineHandler, parameters);
+                        return resolverMethodInfo
+                            .MakeGenericMethod(_pipelineHandler.GetType(), typeof(T), x.ParameterType)
+                            .Invoke(context, new[] { _pipelineHandler, (object)context, i });
+                    })
+               ).ToArray();
 
-            //(Task)_pipelineInvokeMethodInfo.Invoke(_pipelineHandler, new object[] { pipelineDelegate, context });
+            try
+            {
+                return (Task)_pipelineInvokeMethodInfo.Invoke(_pipelineHandler, parameters);
+            }
+            catch (ArgumentException ex)
+            {
+                ex.Data.Add("Handler", _pipelineHandler.ToString());
+                foreach (var parameter in parameters.Select((x, i) => new { value = x, index = i }))
+                    ex.Data.Add($"param_{parameter.index}", parameter.value);
+
+                throw;
+            }
         }
 
         public bool HasContextAction() =>

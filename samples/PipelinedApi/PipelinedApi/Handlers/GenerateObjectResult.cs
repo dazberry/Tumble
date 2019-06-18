@@ -1,22 +1,30 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using PipelinedApi.Models;
 using Tumble.Core;
+using Tumble.Core.Contexts;
 
 namespace PipelinedApi.Handlers
 {
-    public interface IGenerateObjectResultContext<T>
-    {
-        T Response { get; set; }
 
+    public interface IObjectResultContext
+    {
         ObjectResult ObjectResult { get; set; }
     }
 
-    public class GenerateObjectResult : IPipelineHandler<IGenerateObjectResultContext<IEnumerable<DublinBikeStation>>>
+    public class GenerateObjectResult<TResponse> : IPipelineHandler<HttpResponseMessage, TResponse, IObjectResultContext>
     {
-        public async Task InvokeAsync(PipelineDelegate next, IGenerateObjectResultContext<IEnumerable<DublinBikeStation>> context)
+
+        private void SetObjectResult<T>(IObjectResultContext context, T value, int statusCode) =>        
+            context.ObjectResult = new ObjectResult(value) { StatusCode = statusCode };        
+
+        public async Task InvokeAsync(PipelineDelegate next, 
+            HttpResponseMessage httpResponseMessage, 
+            TResponse response, 
+            IObjectResultContext ctx)
         {
             try
             {
@@ -24,26 +32,21 @@ namespace PipelinedApi.Handlers
             }
             finally
             {
-                if (context.Response != null)
-                    context.ObjectResult = new ObjectResult(context.Response) { StatusCode = 200 };
-                else
+                if (httpResponseMessage != null)
                 {
-                    context.ObjectResult = new ObjectResult(
-                        new
-                        {
-                            //context.Id,
-                            //notifications = context
-                            //    .Get<Notification>()
-                            //    .Select((x, i) =>
-                            //    new
-                            //    {
-                            //        id = i + 1,
-                            //        Handler = x.Handler.ToString(),
-                            //        x.ErrorMessage
-                            //    })
-                        })
-                    { StatusCode = 500 };
-                }                
+                    if (httpResponseMessage.StatusCode == System.Net.HttpStatusCode.OK)
+                        SetObjectResult(ctx, 
+                            response, 
+                            200);                        
+                    else                    
+                        SetObjectResult(ctx,
+                            await httpResponseMessage.Content.ReadAsStringAsync(),
+                            (int)httpResponseMessage.StatusCode);                    
+                }
+                else                
+                    SetObjectResult(ctx, 
+                        "Internal server error", 
+                        500);
             }
         }
     }

@@ -1,25 +1,23 @@
 ﻿using System.Threading.Tasks;
 using Tumble.Core;
-using Tumble.Handlers.Proxy.Contexts;
 using Tumble.Client.Extensions;
+using System.Net.Http;
 
 namespace Tumble.Handlers.Resiliency
 {
     public enum FixedIntervalRetryEnum { RetryCountExceeded }
 
-    public class FixedIntervalRetryHandler : IPipelineHandler<IHttpRequestResponseContext>
+    public class FixedIntervalRetryHandler : IPipelineHandler<HttpResponseMessage>
     {
         public FixedIntervalRetryConfiguration Configuration { get; set; }
 
-        public async Task InvokeAsync(PipelineDelegate next, IHttpRequestResponseContext context)
+        public async Task InvokeAsync(PipelineDelegate next, HttpResponseMessage httpResponseMessage)
         {
             //context.Remove(FixedIntervalRetryEnum.RetryCountExceeded);           
             int index = 0;
             await next.Invoke();
-
-            var resp = context.HttpResponseMessage;
-
-            while (resp.IsTransientFailure())
+           
+            while (httpResponseMessage.IsTransientFailure())
             {
                 var delay = Configuration.GetInterval(index);
                 if (!delay.HasValue)

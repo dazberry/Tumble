@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -7,11 +8,15 @@ using System.Threading.Tasks;
 using System.Web;
 using Tumble.Client;
 using Tumble.Core;
-using Tumble.Handlers.Proxy.Contexts;
+using Tumble.Core.Contexts;
+using Tumble.Handlers.Contexts;
 
 namespace Tumble.Handlers.Proxy
 {
-    public class RouteRedirectHandler : IPipelineHandler<IHttpRequestResponseContext>
+    /// <summary>
+    /// 
+    /// </summary>
+    public class RouteRedirectHandler : IPipelineHandler<HttpRequestMessage, IContextResolver<HttpResponseMessage>>
     {
         public IDictionary<string, string> Redirects { get; set; }
         public bool Return404IfNotFound { get; set; } = true;
@@ -43,13 +48,11 @@ namespace Tumble.Handlers.Proxy
             return null;
         }
 
-        public async Task InvokeAsync(PipelineDelegate next, IHttpRequestResponseContext context)
-        {
-            var req = context.HttpRequestMessage;
-            
-            var redirectUri = FindMatchingRedirect(req.RequestUri);
+        public async Task InvokeAsync(PipelineDelegate next, HttpRequestMessage httpRequestMessage, IContextResolver<HttpResponseMessage> httpResponseMessage)
+        {                       
+            var redirectUri = FindMatchingRedirect(httpRequestMessage.RequestUri);
             if (redirectUri != null)
-                req.RequestUri = redirectUri;
+                httpRequestMessage.RequestUri = redirectUri;
             else
             {
                 if (Return404IfNotFound)
@@ -62,7 +65,8 @@ namespace Tumble.Handlers.Proxy
                             Encoding.ASCII,
                             "appliation/json"))
                         .Build();
-                    context.HttpResponseMessage = response;
+
+                    httpResponseMessage.Set(response);
                     return;
                 }
             }

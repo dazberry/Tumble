@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Tumble.Core;
-using Tumble.Handlers.Proxy.Contexts;
 
 namespace Tumble.Handlers.Security
 {
@@ -15,15 +13,15 @@ namespace Tumble.Handlers.Security
 
     public enum ExitRule { ExitIfMatch, ExitIfNoMatch, NeverExit }
 
-    public class RouteValidationHandler : IPipelineHandler<IHttpRequestResponseContext>
+    public class RouteValidationHandler : IPipelineHandler<HttpRequestMessage>
     {
         public IList<MethodAndRoute> MethodsAndRoutes { get; set; }
 
         public ExitRule ExitRule { get; set; } = ExitRule.ExitIfNoMatch;
 
-        public async Task InvokeAsync(PipelineDelegate next, IHttpRequestResponseContext context)
+        public async Task InvokeAsync(PipelineDelegate next, HttpRequestMessage httpRequestMessage)
         {
-            var req = context.HttpRequestMessage;
+            //var req = httpRequestMessage;
             //req.RequestUri.AbsolutePath
             //req.Method
 

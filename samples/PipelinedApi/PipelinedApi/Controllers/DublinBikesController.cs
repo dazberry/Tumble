@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using PipelinedApi.Contexts;
 using PipelinedApi.Handlers;
 using PipelinedApi.Handlers.DublinBikes;
 using PipelinedApi.Models;
@@ -22,60 +24,55 @@ namespace PipelinedApi.Controllers
             _apiKey = configuration.GetValue<string>("JCDApiKey");
         }
 
-        private PipelineRequest GetStationsPipeline() =>
+        private PipelineRequest GetStationsPipeline(string route) =>
             new PipelineRequest()
-                .AddHandlers(_handlers.Get<SetEndpoint>())
+                .AddHandlers(
+                    _handlers.Get<SetDublinBikesEndpoint>())
+                .AddHandler<RouteHandler>(handler =>
+                    handler.Route = route)
                 .AddHandler<QueryParametersHander>(handler =>
                     handler.Add("contract")
-                           .Add("apiKey")
+                           .Add("apiKey", _apiKey)
                  )
-                .AddHandlers(_handlers.Get<InvokeGetRequest>())
-                .AddHandler<ParseStationsResponse>()
-                .AddHandler<OrderStationsResponse>();
+                .AddHandlers(_handlers.Get<InvokeGetRequest>());                
 
         [HttpGet]
         public async Task<IActionResult> GetStations([FromQuery]string orderBy)
-        {           
-            var context = await new PipelineRequest()
-                .AddHandler<GenerateObjectResultHandler<IEnumerable<DublinBikeStation>>>()                
-                .AddHandler(GetStationsPipeline())
-                .InvokeAsync(ctx => ctx
-                    .Add("endpoint", "stations")
-                    .Add("contract", "Dublin")
-                    .Add("apiKey", _apiKey)
-                    .Add("orderBy", orderBy, !string.IsNullOrEmpty(orderBy))
-                );
+        {
+            try
+            {
+                var result = await GetStationsPipeline("stations")
+                    .AddHandler<ParseStationsResponse>()
+                    .AddHandler<OrderStationsResponse>()
+                    .AddHandler<GenerateObjectResult<IEnumerable<DublinBikeStation>>>()
+                    .InvokeAsync(
+                        new DublinBikesContext<IEnumerable<DublinBikeStation>>(),
+                        ctx => ctx
+                        .Add("contract", "Dublin")
+                        .Add("apiKey", _apiKey)
+                        .Add("orderBy", orderBy, string.IsNullOrEmpty(orderBy)));
 
-            if (context.GetFirst(out IActionResult response))
-                return response;
-
-            return new StatusCodeResult(500);
+                return result.ObjectResult;                
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(new { error = ex.Message }) { StatusCode = 500 };
+            }                                  
         }
-
-        private PipelineRequest GetStationPipeline() =>
-            new PipelineRequest()
-                .AddHandler(_handlers.Get<SetEndpoint>())
-                .AddHandler<ContextQueryParameters>(handler =>
-                    handler.Add("contract")
-                           .Add("apiKey"))
-                .AddHandler(_handlers.Get<InvokeGetRequest>())
-                .AddHandler<ParseStationResponse>();
 
         [HttpGet("{stationId}")]
         public async Task<IActionResult> GetStation([FromRoute]int stationId)
         {
-            //var context = await new PipelineRequest()
-            //    .AddHandler<GenerateObjectResult<DublinBikeStation>>()
-            //    .AddHandlers(GetStationPipeline())
-            //    .InvokeAsync(ctx => ctx
-            //        .Add("endpoint", $"stations/{stationId}")
-            //        .Add("contract", "Dublin")
-            //        .Add("apiKey", _apiKey));
+            var result = await GetStationsPipeline($"stations/{stationId}")
+                .AddHandler<ParseStationResponse>()
+                .AddHandler<GenerateObjectResult<DublinBikeStation>>()
+                .InvokeAsync(
+                    new DublinBikesContext<DublinBikeStation>(),
+                    ctx => ctx
+                        .Add("contract", "Dublin")
+                        .Add("apiKey", _apiKey));
 
-            //if (context.GetFirst(out IActionResult response))
-            //    return response;
-
-            return new StatusCodeResult(500);
+            return result.ObjectResult;
         }
         
     }

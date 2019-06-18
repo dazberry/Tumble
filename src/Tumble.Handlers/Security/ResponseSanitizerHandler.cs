@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Tumble.Client;
@@ -10,7 +9,7 @@ using Tumble.Handlers.Security.Contexts;
 
 namespace Tumble.Handlers.Security
 {
-    public class ResponseSanitizerHandler : IPipelineHandler<IResponseSanitizerContext>
+    public class ResponseSanitizerHandler : IPipelineHandler<HttpRequestMessage, IResponseSanitizerContext>
     {
         public bool Sanitize500s { get; set; } = true;
         public bool Sanitize400s { get; set; } = true;
@@ -25,11 +24,11 @@ namespace Tumble.Handlers.Security
         private bool Between(int value, int low, int high) =>
             value >= low & value <= high;
 
-        public async Task InvokeAsync(PipelineDelegate next, IResponseSanitizerContext context)
+        public async Task InvokeAsync(PipelineDelegate next, HttpRequestMessage httpRequestMessage, IResponseSanitizerContext context)
         {
             await next.Invoke();
 
-            var resp = context.HttpResponseMessage;
+            var resp = context.OriginalResponse;
             if (resp != null)
             {
                 var code = (int)resp.StatusCode;

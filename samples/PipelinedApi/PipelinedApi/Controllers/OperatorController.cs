@@ -6,6 +6,9 @@ using PipelinedApi.Handlers;
 using PipelinedApi.Models;
 using PipelinedApi.Handlers.Rtpi;
 using Tumble.Core;
+using PipelinedApi.Handlers.RTPI;
+using Tumble.Client.Handlers;
+using PipelinedApi.Contexts;
 
 namespace PipelinedApi.Controllers
 {
@@ -21,31 +24,25 @@ namespace PipelinedApi.Controllers
             _handlers = pipelineHandlerCollection;
         }
 
-        private PipelineRequest GetOperatorInformationPipeline()
-        {
-            var request = 
+        private PipelineRequest GetOperatorInformationPipeline(string routeSegment) =>
             new PipelineRequest()
-                //.AddHandler<ContextParameters>(
-                //    handler => handler
-                //        .Add("endpoint", "/operatorinformation"))
-                //.AddHandler(_handlers.Get<SetEndpoint>())
+                .AddHandler(_handlers.Get<SetRTPIEndpoint>())
+                .AddHandler<AppendRouteHandler>(handler => 
+                    handler.Route = routeSegment)
+                .AddHandler<QueryParametersHander>(
+                    handler => handler
+                        .Add("format", "jsom"))
                 .AddHandler<InvokeGetRequest>()
-                //.AddHandler<ParseSuccessResponse<OperatorInformation>>();
-            return request;
-        }
+                .AddHandler<ParseSuccessResponse<ApiResponse<OperatorInformation>>>();            
 
         [HttpGet("list")]
         public async Task<IActionResult> Get()
         {
-            //var context = await new PipelineRequest()
-            //    .AddHandler<GenerateObjectResult<ApiResponse<OperatorInformation>>>()
-            //    .AddHandlers(GetOperatorInformationPipeline())
-            //    .InvokeAsync();
+            var context = await GetOperatorInformationPipeline("/operatorinformation")                    
+                    .AddHandler<GenerateObjectResult<ApiResponse<OperatorInformation>>>()
+                    .InvokeAsync(new RTPIContext<ApiResponse<OperatorInformation>>());
 
-            //if (context.GetFirst(out IActionResult response))
-            //    return response;
-
-            return new StatusCodeResult(500);
+            return context.ObjectResult;
         }
     }
 }

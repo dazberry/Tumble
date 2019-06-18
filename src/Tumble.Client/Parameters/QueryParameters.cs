@@ -16,7 +16,7 @@ namespace Tumble.Client.Parameters
                 new QueryParameter()
                 {
                     Name = name,
-                    Value = value.ToString(),
+                    Value = value?.ToString(),
                     Optional = optional
                 });
             return this;

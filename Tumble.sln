@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicRedirect", "samples\Ba
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VersionRedirect", "samples\VersionRedirect\VersionRedirect.csproj", "{74E4BE7D-FBC9-4109-9A8B-46947237B5FB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PipelinedApi", "samples\PipelinedApi\PipelinedApi\PipelinedApi.csproj", "{2ABC2BBF-FAC3-4F39-8903-B43183253930}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PipelinedApi", "samples\PipelinedApi\PipelinedApi\PipelinedApi.csproj", "{B8DA59EB-7C91-4ED1-ADD5-E1454ED0BED0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,10 +59,10 @@ Global
 		{74E4BE7D-FBC9-4109-9A8B-46947237B5FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74E4BE7D-FBC9-4109-9A8B-46947237B5FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74E4BE7D-FBC9-4109-9A8B-46947237B5FB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2ABC2BBF-FAC3-4F39-8903-B43183253930}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2ABC2BBF-FAC3-4F39-8903-B43183253930}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2ABC2BBF-FAC3-4F39-8903-B43183253930}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2ABC2BBF-FAC3-4F39-8903-B43183253930}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8DA59EB-7C91-4ED1-ADD5-E1454ED0BED0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8DA59EB-7C91-4ED1-ADD5-E1454ED0BED0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8DA59EB-7C91-4ED1-ADD5-E1454ED0BED0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8DA59EB-7C91-4ED1-ADD5-E1454ED0BED0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,7 +75,7 @@ Global
 		{4BEFD368-40CD-4FAF-8B5A-E14884E9AFD9} = {D7689900-2474-46E9-B45B-BC1D50C2C1F1}
 		{31915DFD-B25F-4C19-8D27-71D4065C8423} = {BBE99318-A58F-4A76-958D-23B077873B51}
 		{74E4BE7D-FBC9-4109-9A8B-46947237B5FB} = {BBE99318-A58F-4A76-958D-23B077873B51}
-		{2ABC2BBF-FAC3-4F39-8903-B43183253930} = {BBE99318-A58F-4A76-958D-23B077873B51}
+		{B8DA59EB-7C91-4ED1-ADD5-E1454ED0BED0} = {BBE99318-A58F-4A76-958D-23B077873B51}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A48F735A-EC38-4A5B-BBB0-C309A059FE2F}

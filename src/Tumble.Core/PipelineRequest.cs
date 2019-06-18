@@ -13,7 +13,6 @@ namespace Tumble.Core
         public PipelineRequest AddHandler<THandler>(Action<THandler> handlerAction = null)
             where THandler : class, new()
         {
-
             if (typeof(THandler) == typeof(PipelineHandlerInfo) ||
                 typeof(THandler) == typeof(PipelineRequest))
                 throw new ArgumentException($"Unsuppored Handler Type: {typeof(THandler)}");
@@ -108,7 +107,7 @@ namespace Tumble.Core
                 throw new Exception("Can not invoke handler with context");
 
             int index = 0;
-
+            
             PipelineDelegate pipelineDelegate = null;
             pipelineDelegate =
                 async () =>
@@ -124,7 +123,7 @@ namespace Tumble.Core
                             ? pipelineContext
                             : invokeContext
                         : invokeContext;
-                                                          
+
                     await nextHandler.InvokePipelineHandler(pipelineDelegate, ctx);
                 };
 #pragma warning restore IDE0039

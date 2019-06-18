@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PipelinedApi.Handlers;
+using PipelinedApi.Handlers.DublinBikes;
+using PipelinedApi.Handlers.Luas;
 using PipelinedApi.Handlers.Rtpi;
+using PipelinedApi.Handlers.RTPI;
 using Swashbuckle.AspNetCore.Swagger;
 using Tumble.Core;
 
@@ -23,17 +26,17 @@ namespace PipelinedApi
         public void ConfigureServices(IServiceCollection services)
         {
             var pipelineHandlerCollection = new PipelineHandlerCollection()
-                .Add<SetEndpoint>(handler =>
+                .Add<SetRTPIEndpoint>(handler =>
                 {
                     var baseUrl = Configuration.GetValue<Uri>("Endpoints:Rtpi:baseUrl");
                     handler.BaseUrl = baseUrl;
                 })
-                .Add<Handlers.Luas.SetEndpoint>(handler =>
+                .Add<SetLuasEndpoint>(handler =>
                 {
                     var baseUrl = Configuration.GetValue<Uri>("Endpoints:Luas:baseUrl");
                     handler.BaseUrl = baseUrl;
                 })
-                .Add<Handlers.DublinBikes.SetEndpoint>(handler =>
+                .Add<SetDublinBikesEndpoint>(handler =>
                 {
                     var baseUrl = Configuration.GetValue<Uri>("Endpoints:DublinBikes:baseUrl");
                     handler.BaseUrl = baseUrl;

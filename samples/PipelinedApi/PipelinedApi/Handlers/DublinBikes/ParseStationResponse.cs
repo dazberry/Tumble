@@ -3,26 +3,24 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PipelinedApi.Models;
 using Tumble.Core;
+using Tumble.Core.Contexts;
+using Tumble.Handlers.Contexts;
 
 namespace PipelinedApi.Handlers.DublinBikes
 {
-    public class ParseStationResponse : IPipelineHandler
+    public class ParseStationResponse : IPipelineHandler<HttpResponseMessage, IContextResolver<DublinBikeStation>>
     {        
-        public async Task InvokeAsync(IPipelineContext context, PipelineDelegate next)
-        {
-            if (context.Get(out HttpResponseMessage responseMessage))
-            {
-                if (responseMessage.IsSuccessStatusCode)
-                {
-                    var result = await responseMessage.Content.ReadAsStringAsync();
-                    var response = JsonConvert.DeserializeObject<DublinBikeStation>(result);                        
-                    context.Set(response);                   
-                }
+        public async Task InvokeAsync(PipelineDelegate next, HttpResponseMessage httpResponseMessage, IContextResolver<DublinBikeStation> dublinBikeStation)
+        {            
 
-                await next.Invoke();
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                var result = await httpResponseMessage.Content.ReadAsStringAsync();
+                var response = JsonConvert.DeserializeObject<DublinBikeStation>(result);
+                dublinBikeStation.Set(response);                
             }
-            //else
-            //    throw new PipelineDependencyException<HttpResponseMessage>(this);
+
+            await next.Invoke();            
         }
     }
 

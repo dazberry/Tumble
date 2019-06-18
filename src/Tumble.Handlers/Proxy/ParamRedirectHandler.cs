@@ -1,18 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using Tumble.Core;
-using Tumble.Handlers.Proxy.Contexts;
 
 namespace Tumble.Handlers.Proxy
 {
-    //class ParamRedirectHandler
     public enum ParamEvaluationEnum { ParamExists, ParamDoesNotExist, ParamValueMatches, ParamValueDoesNotMatch }
 
-    public class ParamRedirectHandler : IPipelineHandler<IHttpRequestResponseContext>
+    /// <summary>
+    /// Requires HttpRequestMessage
+    /// </summary>
+    public class ParamRedirectHandler : IPipelineHandler<HttpRequestMessage>
     {
         public string ParamName { get; set; }
         public string ParamValue { get; set; }
@@ -20,11 +20,9 @@ namespace Tumble.Handlers.Proxy
 
         public string RedirectUrl { get; set; }
 
-        public async Task InvokeAsync(PipelineDelegate next, IHttpRequestResponseContext context)
+        public async Task InvokeAsync(PipelineDelegate next, HttpRequestMessage httpRequestMessage)
         {
-            var req = context.HttpRequestMessage;
-
-            var parameters = HttpUtility.ParseQueryString(req.RequestUri.Query);
+            var parameters = HttpUtility.ParseQueryString(httpRequestMessage.RequestUri.Query);
             var paramNameAndValue = parameters.Cast<string>()
                 .Where(key => string.Compare(key, ParamName, true) == 0)
                 .Select(key => new { key, value = parameters[key] })
@@ -52,9 +50,9 @@ namespace Tumble.Handlers.Proxy
             {
                 UriBuilder builder = new UriBuilder(RedirectUrl)
                 {
-                    Query = req.RequestUri.Query
+                    Query = httpRequestMessage.RequestUri.Query
                 };
-                req.RequestUri = builder.Uri;
+                httpRequestMessage.RequestUri = builder.Uri;
             }
 
             await next.Invoke();

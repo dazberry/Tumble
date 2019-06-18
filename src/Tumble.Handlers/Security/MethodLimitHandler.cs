@@ -1,30 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Tumble.Client;
 using Tumble.Core;
-using Tumble.Handlers.Proxy.Contexts;
+using Tumble.Core.Contexts;
+using Tumble.Handlers.Contexts;
 
 namespace Tumble.Handlers.Security
 {
-    public class MethodLimitHandler : IPipelineHandler<IHttpRequestResponseContext>
+    public class MethodLimitHandler : IPipelineHandler<HttpRequestMessage, IContextResolver<HttpResponseMessage>>
     {
         public HttpMethod[] RefusedMethods { get; set; }
 
-        public async Task InvokeAsync(PipelineDelegate next, IHttpRequestResponseContext context)
-        {
-            var req = context.HttpRequestMessage;            
-            if (RefusedMethods.Any(x => x == req.Method))
+        public async Task InvokeAsync(PipelineDelegate next, HttpRequestMessage httpRequestMessage, IContextResolver<HttpResponseMessage> httpResponseMessage)
+        {            
+            if (RefusedMethods.Any(x => x == httpRequestMessage.Method))
             {
                 var response = HttpResponseBuilder
                     .HttpResponseMessage()
                     .WithReasonPhrase("Method refused")
                     .WithStatusCode(403);
 
-                context.HttpResponseMessage = response.Build();
+                httpResponseMessage.Set(response.Build());
             }
             else
                 await next.Invoke();
