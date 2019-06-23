@@ -31,7 +31,7 @@ namespace PipelinedApi.Controllers
                     handler.Route = routeSegment)
                 .AddHandler<QueryParametersHander>(
                     handler => handler
-                        .Add("format", "jsom"))
+                        .Add("format", "json"))
                 .AddHandler<InvokeGetRequest>()
                 .AddHandler<ParseSuccessResponse<ApiResponse<OperatorInformation>>>();            
 
